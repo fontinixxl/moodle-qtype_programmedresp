@@ -177,14 +177,18 @@ class qtype_programmedresp_edit_form extends question_edit_form {
     
     public function set_data($question) {
         //parent::set_data($question);
+        echo '<br>In function set_data()';
+        //echo 'print question object : '.$question;
         if (!empty($question->id)) {
 
     		// Variables
     		$varfields = programmedresp_get_var_fields();
     		if ($this->programmedresp_vars) {
+                    echo '<br>foreach var..';
     		    foreach ($this->programmedresp_vars as $var) {
     			    foreach ($varfields as $varfield => $fielddesc) {
     				    $fieldname = 'var_'.$varfield.'_'.$var->varname;
+                                    echo($fieldname.'<br>');
     				    $question->{$fieldname} = $var->{$varfield};
     			    }
     		    }

@@ -25,6 +25,34 @@ class qtype_programmedresp extends question_type {
         return 'question';
     }
 
+    
+    /**
+     * Saves (creates or updates) a question.
+     *
+     * Given some question info and some data about the answers
+     * this function parses, organises and saves the question
+     * It is used by {@link question.php} when saving new data from
+     * a form, and also by {@link import.php} when importing questions
+     * This function in turn calls {@link save_question_options}
+     * to save question-type specific data.
+     *
+     * Whether we are saving a new question or updating an existing one can be
+     * determined by testing !empty($question->id). If it is not empty, we are updating.
+     *
+     * The question will be saved in category $form->category.
+     *
+     * @param object $question the question object which should be updated. For a
+     *      new question will be mostly empty.
+     * @param object $form the object containing the information to save, as if
+     *      from the question editing form.
+     * @param object $course not really used any more.
+     * @return object On success, return the new question object. On failure,
+     *       return an object as follows. If the error object has an errors field,
+     *       display that as an error message. Otherwise, the editing form will be
+     *       redisplayed with validation errors, from validation_errors field, which
+     *       is itself an object, shown next to the form fields. (I don't think this
+     *       is accurate any more.)
+     */
     public function save_question_options($question) {
         echo "<br>QUETIONTYPE:save_question_options()";
         global $DB;
@@ -52,10 +80,22 @@ class qtype_programmedresp extends question_type {
         return true;
     }
     
+    /**
+     * Loads the question type specific options for the question.
+     *
+     * This function loads any question type specific options for the
+     * question from the database into the question object. This information
+     * is placed in the $question->options field. A question type is
+     * free, however, to decide on a internal structure of the options field.
+     * @return bool            Indicates success or failure.
+     * @param object $question The question object for the question. This object
+     *                         should be updated to include the question type
+     *                         specific information (it is passed by reference).
+     */
     public function get_question_options($question) {
         echo "<br>QUETIONTYPE:get_question_options()<br>";
         global $DB;
-        parent::get_question_options($question);            //?¿?¿
+        parent::get_question_options($question);            
         
         $question->options->programmedresp = $DB->get_record('qtype_programmedresp', array('question' => $question->id));
         if (!$question->options->programmedresp) {
@@ -67,12 +107,18 @@ class qtype_programmedresp extends question_type {
         $question->options->concatvars = $DB->get_records_select('qtype_programmedresp_conc', "origin = 'question' AND instanceid = '{$question->options->programmedresp->id}'");
 
         $question->options->function = $DB->get_record('qtype_programmedresp_f', array('id' => $question->options->programmedresp->programmedrespfid));
+        
         if (!$question->options->function) {
             return false;
         }
         return true;
     }
     
+     /**
+     * Initialise the common question_definition fields.
+     * @param question_definition $question the question_definition we are creating.
+     * @param object $questiondata the question data loaded from the database.
+     */
     protected function initialise_question_instance(question_definition $question, $questiondata) {
         echo "<br>initialise_question_instance()";
         echo "<br>quetion id = ".$questiondata->id;
@@ -85,6 +131,7 @@ class qtype_programmedresp extends question_type {
      * @param $programmedresp
      */
     function save_question_options_from_form($question, $programmedresp) {
+        echo '<br>in save_question_options_from_form<br>';
         global $DB;
         $argtypesmapping = programmedresp_get_argtypes_mapping();
 
@@ -198,10 +245,20 @@ class qtype_programmedresp extends question_type {
                     }
 
                     // Insert
+                    /*
+                     * GERARD:
+                     * Si és ExtendedQuiz no cal tractar-ho, ja que no hi podem fer res.Es guarda i ja està!
+                     */
                 } else {
                     if (!$DB->insert_record('qtype_programmedresp_arg', $arg)) {
                         print_error('errordb', 'qtype_programmedresp');
                     }
+                    
+
+                }
+                echo '<br>arg type:<br>';
+                if ($arg->type == PROGRAMMEDRESP_ARG_EXTENDEDQUIZ) {
+                    echo '<br>variable EXTENDED QUIZ<br>';
                 }
             }
         }
@@ -246,6 +303,7 @@ class qtype_programmedresp extends question_type {
 //            return false;
 //        }
         // Vars
+        // GERARD: totes aquestes es guarden en el save_data() del edit_form
         if (!empty($question->vars)) {
             foreach ($question->vars as $vardata) {
 

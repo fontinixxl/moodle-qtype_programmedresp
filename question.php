@@ -43,7 +43,7 @@ class qtype_programmedresp_question extends question_graded_automatically {
     public $correctanswer;
     public $attemptid;
     public $randomval;
-    public $questionusage;
+    public $q_usage_id;
     
     
     public function start_attempt(question_attempt_step $step, $variant) {
@@ -51,26 +51,41 @@ class qtype_programmedresp_question extends question_graded_automatically {
         
     }     
     
+    /**
+     * When an in-progress {@link question_attempt} is re-loaded from the
+     * database, this method is called so that the question can re-initialise
+     * its internal state as needed by this attempt.
+     *
+     * For example, the multiple choice question type needs to set the order
+     * of the choices to the order that was set up when start_attempt was called
+     * originally. All the information required to do this should be in the
+     * $step object, which is the first step of the question_attempt being loaded.
+     *
+     * @param question_attempt_step The first step of the {@link question_attempt}
+     *      being loaded.
+     */
     public function apply_attempt_state(question_attempt_step $step) {
         
+        //var_dump($_SERVER); die();
         global $DB;
         
         $attemptid = $this->get_attemptid_by_stepid($step->get_id());
-        $this->questionusage = $this->get_question_usageid($attemptid);
+        $this->q_usage_id = $this->get_question_usageid($attemptid);
+        //$attemptid = $this->q_usage_id;
         echo"<br> in apply attempt";
-        //echo "<br> step attempt id = ".$step->get_id();
-        echo "<br> correct attempt id = ".$attemptid;
+        echo "<br>question_usage id = ".$this->q_usage_id." <br>";
         //$this->attemptid = $step->get_id();
         $modname = programmedresp_get_modname();
+        //echo $modname;        die();
         // Replacing vars for random values
         if (!empty($this->options->vars)) {
             foreach ($this->options->vars as $var) {        //{$x}
                 
                 // If this attempt doesn't have yet a value
-                if (!$values = $DB->get_field('qtype_programmedresp_val', 'varvalues', array('attemptid' => $attemptid, 'programmedrespvarid' => $var->id, 'module' => $modname))) {
+                if (!$values = $DB->get_field('qtype_programmedresp_val', 'varvalues', array('attemptid' => $this->q_usage_id, 'programmedrespvarid' => $var->id, 'module' => $modname))) {
                     echo "generating new random value";
                     //Add a new random value
-                    $values = $this->generate_value($attemptid, $var, $modname);
+                    $values = $this->generate_value($this->q_usage_id, $var, $modname);
                     if (is_null($values)) {
                         print_error('errordb', 'qtype_programmedresp');
                         
@@ -84,10 +99,11 @@ class qtype_programmedresp_question extends question_graded_automatically {
                 $this->questiontext = str_replace('{$' . $var->varname . '}', $valuetodisplay, $this->questiontext);   
                 
             }
+            
         }else{
             echo "<br> no hi ha vars propies de la Question";
         }
-        $this->attemptid = $attemptid;
+        $this->attemptid = $this->q_usage_id;
     }
     
     
@@ -285,10 +301,10 @@ class qtype_programmedresp_question extends question_graded_automatically {
         $exec = '$results = ' . $this->options->function->name . '(';
 
 
-        //$modname = programmedresp_get_modname();
-        echo '<br>attemptid = '.$this->questionusage;
+        $modname = programmedresp_get_modname();
+        echo '<br>attemptid = '.$this->q_usage_id;
         //echo "<br> modname = ".$modname;
-        $quizid = programmedresp_get_quizid($this->questionusage, 'extendedquiz');
+        $quizid = programmedresp_get_quizid($this->q_usage_id, $modname);
         
         echo "<br> quizid = ".$quizid;
         
@@ -387,17 +403,17 @@ class qtype_programmedresp_question extends question_graded_automatically {
                 break;
 
             case PROGRAMMEDRESP_ARG_EXTENDEDQUIZ:
+                
                 echo "<br>get_exec_arg()->variable extendedquiz";
                 // Getting the argument variable
-                /*$sql = "SELECT * FROM extendedquiz_var_arg gva
+                $sql = "SELECT * FROM {$CFG->prefix}extendedquiz_var_arg gva
             	        WHERE gva.quizid = '$quizid' AND gva.programmedrespargid = '{$arg->id}'";
                         
                 
                 if (!$vardata = $DB->get_record_sql($sql)) {
                     print_error('errorargumentnoassigned', 'qtype_programmedresp');
                 }
-                 * 
-                 */
+
                 
                 if (!$vardata = $DB->get_record('extendedquiz_var_arg', array('quizid' => $quizid, 'programmedrespargid' => $arg->id))) {
                     print_error('errorargumentnoassigned', 'qtype_programmedresp');
@@ -407,19 +423,10 @@ class qtype_programmedresp_question extends question_graded_automatically {
 
                 // A var
                 if ($vardata->type == 'var') {
-                    
-                    //dudoso..
-                    /*$random=$DB->get_records_sql(" 
-                        SELECT
-                            ev.varvalues
-                        FROM {extendedquiz_val} ev
-                        JOIN {extendedquiz_attempts} ea ON ev.attemptid = ea.id
-                        WHERE ea.uniqueid = :?", $attemptid);
-                        //array('attemptid' => $attemptid));
                         
-                    //$random = $DB->get_field('extendedquiz_val', 'varvalues', array('extendedquizvarid' => $vardata->instanceid, 'attemptid' => $attemptid));
+                    $random = $DB->get_field('extendedquiz_val', 'varvalues', array('extendedquizvarid' => $vardata->instanceid, 'attemptid' => $attemptid));
                     $randomvalues = programmedresp_unserialize($random);
-                    */
+                    
                     // A concat var
                 } else {
 

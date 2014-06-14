@@ -143,7 +143,7 @@ class qtype_programmedresp_renderer extends qtype_renderer {
         
         echo "<br>in render:correct_response()";
         $question = $qa->get_question();
-        $answer = $question->get_correct_responses_without_round($qa->get_database_id());
+        $answer = $question->get_correct_responses_without_round($qa->get_usage_id());
         if (!$answer) {
             return '';
         }

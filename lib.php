@@ -408,22 +408,22 @@ function programmedresp_check_base_functions_category() {
  */
 function programmedresp_get_modname() {
 
-	global $CFG;
+	//global $CFG;
 
 //    $withoutmod = substr(str_replace($CFG->dirroot, '', $_SERVER['SCRIPT_FILENAME']), 5);       // The 5 is the /mod/
 //    $modname = substr($withoutmod, 0, strpos($withoutmod, '/'));
 //
 //    return $modname;
-        /*
-	if (strstr($_SERVER['SCRIPT_FILENAME'], 'etendedquiz') != false) {
-		return 'extendedquiz';
-	} else {
-		return 'quiz';
-	}
         
-         * 
-         */
-        return 'extendedquiz';
+	if (strstr($_SERVER['SCRIPT_FILENAME'], 'extendedquiz') != false) {
+            
+		return 'extendedquiz';
+                
+	} else {
+            
+		return 'quiz';
+                
+	}
 }
 
 
