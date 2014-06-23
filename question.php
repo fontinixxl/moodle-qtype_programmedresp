@@ -102,24 +102,25 @@ class qtype_programmedresp_question extends question_graded_automatically {
                 $this->questiontext = str_replace('{$' . $var->varname . '}', $valuetodisplay, $this->questiontext);
             }
         }
-        
+
 
         $answers = $this->get_correct_responses_without_round($this->attemptid);
         foreach ($answers as $key => $ansvalue) {
             $this->answers[$key]->answer = $ansvalue;
+            $this->answers[$key]->answerformat = 1;
         }
-        print_r($this->answers);
+        //print_r($this->answers);
     }
 
     public function get_correct_response() {
-        
-        if(empty($this->answers[0]->answer)){
+
+        if (empty($this->answers[0]->answer)) {
             debugging("getcorrect response() withous response yet");
             return null;
         }
         $response = array();
         foreach ($this->resps as $resp) {
-                $response[$this->field($resp->returnkey)] = $this->answers[
+            $response[$this->field($resp->returnkey)] = $this->answers[
                     $resp->returnkey]->answer;
         }
         debugging("getcorrect response() with response");
@@ -165,8 +166,6 @@ class qtype_programmedresp_question extends question_graded_automatically {
 
     public function grade_response(array $response) {
         debugging("grade_response");
-        debugging("The student response is = " . $response['answer']);
-
         // Stores the average grade
         $fractions = array();
         $nresponses = 0;
@@ -175,16 +174,13 @@ class qtype_programmedresp_question extends question_graded_automatically {
             if (empty($response[$this->field($resultkey)])) {
                 $response[$this->field($resultkey)] = '';
             }
-            $this->answers[$resultkey]->fraction = $this->test_programmed_response($answer->answer, 
-                    $response[$this->field($resultkey)], $this->options->programmedresp);
-            $fractions[] = $this->answers[$resultkey]->fraction;
+            $fractions[] = $this->test_programmed_response($answer->answer, $response[$this->field($resultkey)], $this->options->programmedresp);
             $nresponses++;
         }
 
         $raw_grade = (float) array_sum($fractions) / $nresponses;
-        echo 'raw grade before round is : ' . $raw_grade . ' <br>';
         $raw_grade = min(max((float) $raw_grade, 0.0), 1.0) * 1;
-        echo 'raw grade after round is : ' . $raw_grade . ' <br>';
+        debugging("the fraction for this responses is : " . $raw_grade);
 
         return array($raw_grade, question_state::graded_state_for_fraction($raw_grade));
     }
@@ -222,8 +218,8 @@ class qtype_programmedresp_question extends question_graded_automatically {
     }
 
     public function is_same_response(array $prevresponse, array $newresponse) {
-        
-        foreach($this->resps as $resp){
+
+        foreach ($this->resps as $resp) {
             $fieldname = $this->field($resp->returnkey);
             if (!question_utils::arrays_same_at_key_integer($prevresponse, $newresponse, $fieldname)) {
                 debugging("is same response false");
@@ -241,7 +237,7 @@ class qtype_programmedresp_question extends question_graded_automatically {
     public function classify_response(array $response) {
         return array();
     }
-    
+
     //helper methods
 
     /**
@@ -300,7 +296,6 @@ class qtype_programmedresp_question extends question_graded_automatically {
         // Executes the function and stores the result/s in $results var
         //echo "<br>function name = ".$this->options->function->name;
         $exec = '$results = ' . $this->options->function->name . '(';
-        //debugging("function name = " . $this->options->function->name);
 
 
         $modname = programmedresp_get_modname();
@@ -541,6 +536,20 @@ class qtype_programmedresp_question extends question_graded_automatically {
             echo "<br>upss.... get_question_usageid()";
         }
         return $questionusage;
+    }
+    
+    public function is_correct_answer($ansid, question_attempt $qa){
+        $fraction = $this->test_programmed_response($this->answers[$ansid]->answer, 
+                $qa->get_last_qt_var($this->field($ansid)), $this->options->programmedresp);
+        
+        return $fraction;
+    }
+    
+    public function make_html_inline($html) {
+        $html = preg_replace('~\s*<p>\s*~u', '', $html);
+        $html = preg_replace('~\s*</p>\s*~u', '<br />', $html);
+        $html = preg_replace('~(<br\s*/?>)+$~u', '', $html);
+        return trim($html);
     }
 
 }
