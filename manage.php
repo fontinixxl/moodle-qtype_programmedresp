@@ -7,25 +7,30 @@
  * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
  * @package qtype_programmedresp
  */
+
 require_once('../../../config.php');
+
+global $CFG, $PAGE;
 
 require_once($CFG->dirroot . '/question/type/programmedresp/forms/programmedresp_addcategory_form.php');
 require_once($CFG->dirroot . '/question/type/programmedresp/forms/programmedresp_addfunctions_form.php');
 require_once($CFG->dirroot . '/question/type/programmedresp/functions_tokenizer.class.php');
 require_once($CFG->dirroot . '/question/type/programmedresp/lib.php');
 
-$action = required_param('action', PARAM_ALPHA);
-require_capability('moodle/question:config', get_context_instance(CONTEXT_SYSTEM));
-
-//require_js(array('yui_yahoo', 'yui_event', 'yui_connection'));
+require_login();
+require_capability('moodle/question:config', context_system::instance());
 $PAGE->requires->js('/question/type/programmedresp/script.js');
+$action = required_param('action', PARAM_ALPHA);
+$PAGE->set_context(context_system::instance());
+$PAGE->set_url(new moodle_url($CFG->wwwroot . '/question/type/programmedresp/manage.php', array('action' => $action)));
 
-print_header_simple(get_string($action, 'qtype_programmedresp'));
+$PAGE->set_title(get_string($action, 'qtype_programmedresp'));
+$PAGE->set_heading(get_string($action, 'qtype_programmedresp'));
+$PAGE->set_focuscontrol('');
+$PAGE->set_cacheable(true);
+echo $OUTPUT->header();
 
-// Adding wwwroot
-//echo "<script type=\"text/javascript\">//<![CDATA[\n".
-//    "var wwwroot = '".$CFG->wwwroot."';\n".
-//    "//]]></script>\n";
+
 
 switch ($action) {
 
@@ -48,13 +53,18 @@ switch ($action) {
         // Insert category
         if ($data = $form->get_data()) {
 
-            $catdata->parent = $data->parent;
+            $catdata->parent = (int)$data->parent;
+            
             $catdata->name = $data->name;
             if (!$catdata->id = $DB->insert_record('qtype_programmedresp_fcat', $catdata)) {
                 print_error('errordb', 'qtype_programmedresp');
             }
-
-            echo "<script type=\"text/javascript\">//<![CDATA[\n" .
+            
+            $params = array($catdata->id , $catdata->name, "id_functioncategory", $data->parent);
+            $PAGE->requires->js_init_call('exec_js_manage', $params);
+            
+            
+            /*echo "<script type=\"text/javascript\">//<![CDATA[\n" .
             "var wwwroot = '" . $CFG->wwwroot . "';\n" .
             "add_to_parent(\"" . $catdata->id . "\", \"" . $catdata->name . "\", \"id_functioncategory\", \"" . $data->parent . "\");\n" .
             "opened = true;\n" .
@@ -62,7 +72,7 @@ switch ($action) {
             "update_addfunctionurl();\n" .
             "window.close();\n" .
             "//]]></script>\n";
-
+            */
             // Display form
         } else {
             $form->display();
@@ -139,11 +149,9 @@ switch ($action) {
 
             // Add the functions created to the form
             if (!empty($fdatas)) {
-                echo '<script type="text/javascript">';
                 foreach ($fdatas as $f) {
-                    echo 'add_to_parent("' . $f->id . '", "' . $f->name . '", "id_programmedrespfid");';
+                    $PAGE->requires->js_init_call('exec_js_funct_manage', array($f->id , $f->name, "id_programmedrespfid"));
                 }
-                echo '</script>';
             }
         }
 
@@ -154,7 +162,7 @@ switch ($action) {
         break;
 
     default:
-
-        die();
         break;
 }
+
+echo $OUTPUT->footer();

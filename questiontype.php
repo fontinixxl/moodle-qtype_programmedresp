@@ -5,27 +5,26 @@ defined('MOODLE_INTERNAL') || die();
 require_once($CFG->libdir . '/questionlib.php');
 
 class qtype_programmedresp extends question_type {
-    
+
     public $programmedrespfields = array('programmedrespfid', 'tolerancetype', 'tolerance');
     public $exportvarfields = array('varname', 'nvalues', 'maximum', 'minimum', 'valueincrement');
     public $exportconcatvarfields = array('origin', 'name', 'vars');
     public $exportargfields = array('argkey', 'type', 'value');
     public $exportrespfields = array('returnkey', 'label');
     public $exportfunctionfields = array('programmedrespfcatid', 'name', 'description', 'nreturns', 'params', 'results');
-    
+
     public function name() {
         return 'programmedresp';
     }
-    
+
     public function extra_question_fields() {
         return array('qtype_programmedresp', 'programmedrespfid', 'tolerancetype', 'tolerance');
     }
-    
+
     function questionid_column_name() {
         return 'question';
     }
 
-    
     /**
      * Saves (creates or updates) a question.
      *
@@ -54,12 +53,15 @@ class qtype_programmedresp extends question_type {
      *       is accurate any more.)
      */
     public function save_question_options($question) {
-        echo "<br>QUETIONTYPE:save_question_options()";
         global $DB;
+        //print_r($question);
+        debugging('save question options FUNCTION', DEBUG_DEVELOPER);
+
         // It doesn't return the inserted/updated qtype_programmedresp->id
-        parent::save_question_options($question);
-        
-        $programmedresp = $DB->get_record('qtype_programmedresp',  array('question' => $question->id));
+        //parent::save_question_options($question);
+
+
+        $programmedresp = $DB->get_record('qtype_programmedresp', array('question' => $question->id));
 
         // If we are updating, they will be reinserted
         $DB->delete_records('qtype_programmedresp_resp', array('programmedrespid' => $programmedresp->id));
@@ -68,18 +70,16 @@ class qtype_programmedresp extends question_type {
             $result = $this->save_question_options_from_form($question, $programmedresp);
         } else {
             //segons crec, aquesta opcio es x quan importem preguntes d'altres cursos 
-           // $result = $this->save_question_options_from_questiondata($question, $programmedresp);
+            // $result = $this->save_question_options_from_questiondata($question, $programmedresp);
         }
 
         // Rollback changes
         if (!$result) {
             $this->delete_question($question->id);
-            return false;
+            //return false;
         }
-
-        return true;
     }
-    
+
     /**
      * Loads the question type specific options for the question.
      *
@@ -93,48 +93,57 @@ class qtype_programmedresp extends question_type {
      *                         specific information (it is passed by reference).
      */
     public function get_question_options($question) {
-        echo "<br>QUETIONTYPE:get_question_options()<br>";
         global $DB;
-        parent::get_question_options($question);            
-        
+        debugging("QUETIONTYPE:get_question_options");
+
         $question->options->programmedresp = $DB->get_record('qtype_programmedresp', array('question' => $question->id));
         if (!$question->options->programmedresp) {
             return false;
         }
         $question->options->vars = $DB->get_records('qtype_programmedresp_var', array('programmedrespid' => $question->options->programmedresp->id));
-        $question->options->args = $DB->get_records('qtype_programmedresp_arg', array('programmedrespid'=> $question->options->programmedresp->id));
+        $question->options->args = $DB->get_records('qtype_programmedresp_arg', array('programmedrespid' => $question->options->programmedresp->id));
         $question->options->resps = $DB->get_records('qtype_programmedresp_resp', array('programmedrespid' => $question->options->programmedresp->id), 'returnkey ASC', 'returnkey, label');
         $question->options->concatvars = $DB->get_records_select('qtype_programmedresp_conc', "origin = 'question' AND instanceid = '{$question->options->programmedresp->id}'");
-
+        /*$question->options->answers = $DB->get_records('question_answers',
+                array('question' => $question->id), 'id ASC');
+         * 
+         */
         $question->options->function = $DB->get_record('qtype_programmedresp_f', array('id' => $question->options->programmedresp->programmedrespfid));
         
-        if (!$question->options->function) {
-            return false;
-        }
-        return true;
+        parent::get_question_options($question);
+
     }
-    
-     /**
+
+    /**
      * Initialise the common question_definition fields.
      * @param question_definition $question the question_definition we are creating.
-     * @param object $questiondata the question data loaded from the database.
+     * @param object $questiondata the question data loaded from the database.=> la de get_question_option()
      */
     protected function initialise_question_instance(question_definition $question, $questiondata) {
-        echo "<br>initialise_question_instance()";
-        echo "<br>quetion id = ".$questiondata->id;
+        debugging("initialise_question_instance");
         parent::initialise_question_instance($question, $questiondata);
-        $question->options = $questiondata->options;        
+        $question->resps = $questiondata->options->resps;
+        $question->options = $questiondata->options;
+        
+        $question->answers = array();
+        foreach ($question->resps as $resp) {
+            $question->answers[$resp->returnkey] = new question_answer($resp->returnkey, '',
+                    0, '', 1);
+        }
     }
+
     /**
      * Gets the data to insert/update from the _POST request
      * @param $question
      * @param $programmedresp
      */
     function save_question_options_from_form($question, $programmedresp) {
-        echo '<br>in save_question_options_from_form<br>';
+        debugging('save question options from form FUNCTION', DEBUG_DEVELOPER);
         global $DB;
         $argtypesmapping = programmedresp_get_argtypes_mapping();
 
+        $oldanswers = $DB->get_records('question_answers', array('question' => $question->id), 'id ASC');
+        $answers = array();
         // The arguments must be added after the vars
         $i = 0;
 
@@ -169,13 +178,32 @@ class qtype_programmedresp extends question_type {
                 if (!$DB->insert_record('qtype_programmedresp_resp', $resp)) {
                     print_error('errordb', 'qtype_programmedresp');
                 }
+
+                //GERARD save answers(format,resp_name..) in answers table
+                $answer = array_shift($oldanswers);
+                if (!$answer) {
+                    $answer = new stdClass();
+                    $answer->question = $question->id;
+                    $answer->answer = '';
+                    $answer->feedback = '';
+                    $answer->id = $DB->insert_record('question_answers', $answer);
+                }
+                $answer->answer = $resp->label;
+                $answer->answerformat = 1;
+                $DB->update_record('question_answers', $answer);
+                $answers[] = $answer->id;
+                //
             }
         }
 
-        // Inserting vars
-//        if (!$vars || !$args) {
-//            return false;
-//        }
+        // Delete any left over old answer records.
+        $fs = get_file_storage();
+        foreach ($oldanswers as $oldanswer) {
+            $fs->delete_area_files($context->id, 'question', 'answerfeedback', $oldanswer->id);
+            $DB->delete_records('question_answers', array('id' => $oldanswer->id));
+        }
+
+        $options->answers = implode(',', $answers);
 
         if (!empty($vars)) {
             foreach ($vars as $varname => $var) {
@@ -253,8 +281,6 @@ class qtype_programmedresp extends question_type {
                     if (!$DB->insert_record('qtype_programmedresp_arg', $arg)) {
                         print_error('errordb', 'qtype_programmedresp');
                     }
-                    
-
                 }
                 echo '<br>arg type:<br>';
                 if ($arg->type == PROGRAMMEDRESP_ARG_EXTENDEDQUIZ) {
@@ -265,32 +291,31 @@ class qtype_programmedresp extends question_type {
 
         return true;
     }
-   
-    
+
     public function delete_question($questionid, $contextid) {
-        global $DB;//?¿¿?
+        global $DB; //?¿¿?
         $programmedresp = $DB->get_record('qtype_programmedresp', array('question' => $questionid));
         if (!$programmedresp) {
             return false;
         }
-        
+
         $DB->delete_records('qtype_programmedresp_arg', array('programmedrespid' => $programmedresp->id));
         $DB->delete_records('qtype_programmedresp_resp', array('programmedrespid' => $programmedresp->id));
-        
+
         $vars = $DB->get_records('qtype_programmedresp_var', array('programmedrespid' => $programmedresp->id));
         if ($vars) {
             foreach ($vars as $var) {
                 $DB->delete_records('qtype_programmedresp_val', array('programmedrespvarid' => $var->id));
             }
         }
-        
+
         $DB->delete_records('qtype_programmedresp_var', array('programmedrespid' => $programmedresp->id));
         $DB->delete_records('qtype_programmedresp_conc', array('origin' => 'question', 'instanceid' => $programmedresp->id));
         $DB->delete_records('qtype_programmedresp', array('question', $questionid));
 
-        return true;
+        parent::delete_question($questionid, $contextid);
     }
-    
+
     /**
      * Gets the data to insert from the $question object (petitions from import...)
      * @param $question
@@ -372,8 +397,9 @@ class qtype_programmedresp extends question_type {
 
         return true;
     }
+
     public function get_possible_responses($questiondata) {
-        parent::get_possible_responses($questiondata);
-        //TODO
+        return array();
     }
+
 }

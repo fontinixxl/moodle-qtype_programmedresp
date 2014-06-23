@@ -16,7 +16,7 @@
     $string['answer'] = 'Answer: {$a}';
     $string['argconcat'] = 'Concatenated variable';
     $string['argfixed'] = 'Fixed';
-    $string['argguidedquiz'] = 'Guided quiz';
+    $string['argextendedquiz'] = 'Extended quiz';
     $string['argvariable'] = 'Variable';
     $string['assignfunction'] = 'Assign function';
     $string['assignvarsvalues'] = 'Assign variables values';
@@ -86,6 +86,7 @@
     $string['tolerancerelative'] = 'Relative';
     $string['tolerancetype'] = 'Tolerance type';
     $string['type'] = 'Type';
+    $string['updatecategories'] = 'Update Categories';
     $string['upgradeguidedquiz2011102000'] = 'If you have the Guided quiz module installed, update it to the 2011102000 at least';
     $string['valueincrement'] = 'Increment';
     $string['var'] = 'Variable';

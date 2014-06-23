@@ -230,7 +230,7 @@ function programmedresp_add_child_categories($parentid, &$catoptions, $categorie
  */
 function programmedresp_get_function_code($functionname) {
     global $CFG;
-
+    echo '<br> intenta recuperar el contingut de:  '.$CFG->dataroot.'/qtype_programmedresp.php';
     // Getting all the file
     if (!$filecode = file_get_contents($CFG->dataroot.'/qtype_programmedresp.php')) {
     	print_error('errorcantaccessfile', 'qtype_programmedresp');
@@ -361,10 +361,11 @@ function programmedresp_get_random_value($vardata) {
  * It checks that the functions file exists
  */
 function programmedresp_check_datarootfile() {
-
+    echo "<br><strong> in check datarootfile</strong><br>";
     global $CFG;
 
     $file = $CFG->dataroot.'/qtype_programmedresp.php';
+    echo ("file = ".$file);
 
     // Creating a new file
     if (!file_exists($file)) {

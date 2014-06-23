@@ -7,6 +7,7 @@ var questiontextregexpfilter = /[^0-9a-z{}\$\ ]/g;
 var editing = false;
 var opened = false;
 
+
 function get_questiontext() {
     
     var questiontextvalue = false;
@@ -169,27 +170,13 @@ function display_section(params) {
           failure: failure_display_section,
           timeout: 50000
     };
-/*
-    url = wwwroot+"/mod/foo/contents.php";
-    YUI.use('io-base',function(Y){
-    	Y.on('io:complete',callbackHandler, Y);
-    	Y.io(url);
-    }); */
+
 	dir = wwwroot+"/question/type/programmedresp/contents.php";
      YUI().use('yui2-connection', function(Y) {
 	 Y.YUI2.util.Connect.asyncRequest('POST', dir, callbackHandler, params);
 	 });
 	 
-    /*dir = wwwroot+"/mod/foo/contents.php";
-    Y.io(dir, {
-        method: 'POST',
-        data: params,
-        on: {
-            success: process_display_section,
-            failure: failure_display_section,
-            timeout: 50000
-        }
-    });  */
+
     
     return callbackResult;
 }
@@ -355,6 +342,7 @@ function check_numeric(element, message) {
 function add_to_parent(id, name, openerelementid, afterkey) {
     
     var openerselect = window.opener.document.getElementById(openerelementid);
+    
     var optionslength = openerselect.options.length;
     
     var newoption = document.createElement('option');
@@ -418,6 +406,7 @@ function add_to_parent(id, name, openerelementid, afterkey) {
 function update_addfunctionurl() {
     
     if (opened == true) {
+        
         var categoryelement = window.opener.document.getElementById("id_functioncategory");
         var functionelement = window.opener.document.getElementById("id_addfunctionurl");
     } else {
@@ -438,4 +427,20 @@ function update_addfunctionurl() {
         functionelement.href = functionelement.href.substr(0, fcatidindex) + "&fcatid=" + categoryelement.value;
     }
     
+}
+
+
+//funcions necessaries per fer crides a funcions javascript des de PHP
+function exec_js_manage(unused_yui, id, name, openerelementid, parent){
+    
+    add_to_parent(id, name, openerelementid, parent);
+    opened = true;
+    update_addfunctionurl();
+    window.close();
+    
+}
+
+function exec_js_funct_manage(unused_yui, id, name, openerelementid){
+    
+    add_to_parent(id, name, openerelementid);
 }
