@@ -57,8 +57,8 @@ class qtype_programmedresp extends question_type {
         //print_r($question);
         debugging('save question options FUNCTION', DEBUG_DEVELOPER);
 
-        // It doesn't return the inserted/updated qtype_programmedresp->id
-        //parent::save_question_options($question);
+        // It does't return the inserted/updated qtype_programmedresp->id
+        parent::save_question_options($question);
 
 
         $programmedresp = $DB->get_record('qtype_programmedresp', array('question' => $question->id));
@@ -142,8 +142,8 @@ class qtype_programmedresp extends question_type {
         global $DB;
         $argtypesmapping = programmedresp_get_argtypes_mapping();
 
-        $oldanswers = $DB->get_records('question_answers', array('question' => $question->id), 'id ASC');
-        $answers = array();
+        //$oldanswers = $DB->get_records('question_answers', array('question' => $question->id), 'id ASC');
+        //$answers = array();
         // The arguments must be added after the vars
         $i = 0;
 
@@ -179,32 +179,12 @@ class qtype_programmedresp extends question_type {
                     print_error('errordb', 'qtype_programmedresp');
                 }
 
-                //GERARD save answers(format,resp_name..) in answers table
-                $answer = array_shift($oldanswers);
-                if (!$answer) {
-                    $answer = new stdClass();
-                    $answer->question = $question->id;
-                    $answer->answer = '';
-                    $answer->feedback = '';
-                    $answer->id = $DB->insert_record('question_answers', $answer);
-                }
-                $answer->answer = $resp->label;
-                $answer->answerformat = 1;
-                $DB->update_record('question_answers', $answer);
-                $answers[] = $answer->id;
+                
                 //
             }
         }
 
         // Delete any left over old answer records.
-        $fs = get_file_storage();
-        foreach ($oldanswers as $oldanswer) {
-            $fs->delete_area_files($context->id, 'question', 'answerfeedback', $oldanswer->id);
-            $DB->delete_records('question_answers', array('id' => $oldanswer->id));
-        }
-
-        $options->answers = implode(',', $answers);
-
         if (!empty($vars)) {
             foreach ($vars as $varname => $var) {
                 $var->programmedrespid = $programmedresp->id;
