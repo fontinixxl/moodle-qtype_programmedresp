@@ -150,7 +150,7 @@ class qtype_programmedresp_question extends question_graded_automatically {
         debugging("get_expected_data");
         $expected = array();
         foreach ($this->resps as $resp) {
-            $expected[$this->field($resp->returnkey)] = PARAM_FLOAT;
+            $expected[$this->field($resp->returnkey)] = PARAM_RAW_TRIMMED;
         }
         debugging(print_r($expected));
         return $expected;
@@ -221,7 +221,7 @@ class qtype_programmedresp_question extends question_graded_automatically {
 
         foreach ($this->resps as $resp) {
             $fieldname = $this->field($resp->returnkey);
-            if (!question_utils::arrays_same_at_key_integer($prevresponse, $newresponse, $fieldname)) {
+            if (!question_utils::arrays_same_at_key($prevresponse, $newresponse, $fieldname)) {
                 debugging("is same response false");
                 return false;
             }
@@ -537,14 +537,13 @@ class qtype_programmedresp_question extends question_graded_automatically {
         }
         return $questionusage;
     }
-    
-    public function is_correct_answer($ansid, question_attempt $qa){
-        $fraction = $this->test_programmed_response($this->answers[$ansid]->answer, 
-                $qa->get_last_qt_var($this->field($ansid)), $this->options->programmedresp);
-        
+
+    public function is_correct_answer($ansid, question_attempt $qa) {
+        $fraction = $this->test_programmed_response($this->answers[$ansid]->answer, $qa->get_last_qt_var($this->field($ansid)), $this->options->programmedresp);
+
         return $fraction;
     }
-    
+
     public function make_html_inline($html) {
         $html = preg_replace('~\s*<p>\s*~u', '', $html);
         $html = preg_replace('~\s*</p>\s*~u', '<br />', $html);

@@ -171,6 +171,8 @@ class qtype_programmedresp_edit_form extends question_edit_form {
         $mform->addRule('tolerance', null, 'required', null, 'client');
         $mform->addRule('tolerance', null, 'numeric', null, 'client');
         $mform->setType('tolerance', PARAM_NUMBER);
+        
+        $this->add_interactive_settings(true, true);
 
         // Add the onload javascript to hide next steps
         if (empty($this->question->id)) {
