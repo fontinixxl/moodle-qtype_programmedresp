@@ -1,0 +1,56 @@
+.que.programmedresp .answer .specificfeedback {
+    display: inline;
+    padding: 0 0.7em;
+    background: #FFF3BF;
+}
+.que.programmedresp .answer div.r0,
+.que.programmedresp .answer div.r1 {
+    padding: 0.3em 0 0.3em 25px;
+    text-indent: -25px;
+}
+
+.que.programmedresp .answer div.r0 div.specificfeedback,
+.que.programmedresp .answer div.r1 div.specificfeedback {
+    /* In Chrome and IE, the text-indent above is applied to any embedded table
+       cells or <li>s, which screws up the intended layout. This fixes it again. */
+    text-indent: 0;
+}
+.que.programmedresp .answer div.r0 bel,
+.que.programmedresp .answer div.r1 bel {
+    width: 7%;
+    display: inline-block;
+    text-indent: 1;
+}
+
+.que.programmedresp .answer div.r0 input,
+.que.programmedresp .answer div.r1 input {
+    margin: 0 5px;
+    padding: 0;
+    width: 90px;
+}
+.dir-rtl .que.programmedresp .answer div.r0,
+.dir-rtl .que.programmedresp .answer div.r1 {
+    padding: 0.3em 25px 0.3em 0;
+}
+
+//EDITING QUESTION
+div.programmedresp_functiondescription {
+    border-style: solid;
+    width: 650px;
+    margin: 30px auto 30px auto;
+    padding: 3px;
+}
+
+#id_responseslabels {
+    visibility: hidden;
+    display: none;
+}
+
+.hidden_arg {
+    visibility: hidden;
+    display: none;
+}
+
+.programmedresp_novars {
+    padding: 10px;
+}
