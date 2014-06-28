@@ -103,7 +103,6 @@ class qtype_programmedresp_question extends question_graded_automatically {
             }
         }
 
-
         $answers = $this->get_correct_responses_without_round($this->attemptid);
         foreach ($answers as $key => $ansvalue) {
             $this->answers[$key]->answer = $ansvalue;
@@ -439,11 +438,12 @@ class qtype_programmedresp_question extends question_graded_automatically {
                     foreach ($varnames as $varname) {
 
                         // Getting the var id
-                        $varid = $DB->get_field('extendedquiz_val', 'id', array('quizid' => $quizid, 'varname' => $varname));
+                        $varid = $DB->get_field('extendedquiz_var', 'id', array('quizid' => $quizid, 'varname' => $varname));
 
                         $random = $DB->get_field('extendedquiz_val', 'varvalues', array('extendedquizvarid' => $varid, 'attemptid' => $attemptid));
                         if (!$random) {
-                            print_error('errornorandomvaluesdata', 'qtype_programmedresp');
+                            //print_error('errornorandomvaluesdata', 'qtype_programmedresp');
+                            break;
                         }
 
                         $randomvalues = array_merge($randomvalues, programmedresp_unserialize($random));
