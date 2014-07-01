@@ -126,7 +126,7 @@ function programmedresp_get_concat_vars($args = false) {
  * @return The concat var data: name, referenced vars...
  */
 function programmedresp_get_concatvar_data($id) {
-        $DB;
+        global $DB;
 	$data = $DB->get_record('qtype_programmedresp_conc', array('id' => $id));
 	if (!$data) {
 		print_error('errornoconcatvar', 'qtype_programmedresp');

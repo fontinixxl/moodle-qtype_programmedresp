@@ -390,7 +390,7 @@ class qtype_programmedresp_question extends question_graded_automatically {
                         print_error('errorcantfindvar', 'qtype_programmedresp', $varname);
                     }
 
-                    $random = get_field('qtype_programmedresp_val', 'varvalues', 'attemptid', $attemptid, 'programmedrespvarid', $varid, 'module', $modname);
+                    $random = $DB->get_field('qtype_programmedresp_val', 'varvalues', array('attemptid' => $attemptid, 'programmedrespvarid' => $varid, 'module' => $modname));
                     if (!$random) {
                         print_error('errornorandomvaluesdata', 'qtype_programmedresp');
                     }
