@@ -67,7 +67,7 @@ class qtype_programmedresp_renderer extends qtype_renderer {
                             'value' => 0,
                 ));
             }
-            $inputs[] = html_writer::tag('bel', $resp->label . ':', array('for' => $inputattributes['id'], 'class' => 'programmedresp')) .
+            $inputs[] = html_writer::tag('bel', $resp->label, array('for' => $inputattributes['id'], 'class' => 'programmedresp')) .
                     html_writer::empty_tag('input', $inputattributes);
             //$inputs[] = $hidden . html_writer::empty_tag('input', $inputattributes) .
             //        html_writer::tag('bel', $resp->label, array('for' => $inputattributes['id']));
