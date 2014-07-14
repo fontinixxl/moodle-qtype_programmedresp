@@ -142,11 +142,7 @@ class qtype_programmedresp extends question_type {
         global $DB;
         $argtypesmapping = programmedresp_get_argtypes_mapping();
 
-        //$oldanswers = $DB->get_records('question_answers', array('question' => $question->id), 'id ASC');
-        //$answers = array();
-        // The arguments must be added after the vars
         $i = 0;
-
         foreach ($_POST as $varname => $value) {
 
             // Insert var
@@ -273,7 +269,7 @@ class qtype_programmedresp extends question_type {
     }
 
     public function delete_question($questionid, $contextid) {
-        global $DB; //?¿¿?
+        global $DB;
         $programmedresp = $DB->get_record('qtype_programmedresp', array('question' => $questionid));
         if (!$programmedresp) {
             return false;
@@ -291,7 +287,7 @@ class qtype_programmedresp extends question_type {
 
         $DB->delete_records('qtype_programmedresp_var', array('programmedrespid' => $programmedresp->id));
         $DB->delete_records('qtype_programmedresp_conc', array('origin' => 'question', 'instanceid' => $programmedresp->id));
-        $DB->delete_records('qtype_programmedresp', array('question', $questionid));
+        $DB->delete_records('qtype_programmedresp', array('question' => $questionid));
 
         parent::delete_question($questionid, $contextid);
     }
