@@ -114,7 +114,7 @@ class qtype_programmedresp_question extends question_graded_automatically {
     public function get_correct_response() {
 
         if (empty($this->answers[0]->answer)) {
-            debugging("getcorrect response() withous response yet");
+            //debugging("getcorrect response() withous response yet");
             return null;
         }
         $response = array();
@@ -122,7 +122,7 @@ class qtype_programmedresp_question extends question_graded_automatically {
             $response[$this->field($resp->returnkey)] = $this->answers[
                     $resp->returnkey]->answer;
         }
-        debugging("getcorrect response() with response");
+        //debugging("getcorrect response() with response");
         return $response;
     }
 
@@ -277,9 +277,10 @@ class qtype_programmedresp_question extends question_graded_automatically {
      * @return array Correct responses with format array('ARGNUM' => VALUE, ....)
      */
     function get_correct_responses_without_round($attemptid) {
+        global $DB;
         //echo '<br> get_correct_responses_withoyt_round';
 
-        /* Get the function which calculates the response
+        //Get the function which calculates the response
           //JA ho obting des de get_question_options
           if (!$programmedresp = $DB->get_record('qtype_programmedresp', array('question' => $this->id))) {
 
@@ -290,11 +291,11 @@ class qtype_programmedresp_question extends question_graded_automatically {
           $args = $DB->get_records('qtype_programmedresp_arg', array('programmedrespid' => $programmedresp->id), 'argkey ASC');
           $vars = $DB->get_records('qtype_programmedresp_var', array('programmedrespid'=> $programmedresp->id));
 
-         */
+         
 
         // Executes the function and stores the result/s in $results var
         //echo "<br>function name = ".$this->options->function->name;
-        $exec = '$results = ' . $this->options->function->name . '(';
+        $exec = '$results = ' . $function->name . '(';
 
 
         $modname = programmedresp_get_modname();
@@ -304,9 +305,9 @@ class qtype_programmedresp_question extends question_graded_automatically {
 
         //echo "<br> quizid = " . $quizid;
 
-        foreach ($this->options->args as $arg) {
+        foreach ($args as $arg) {
 
-            $execargs[] = $this->get_exec_arg($arg, $this->options->vars, $attemptid, $quizid);
+            $execargs[] = $this->get_exec_arg($arg, $vars, $attemptid, $quizid);
         }
         $exec.= implode(', ', $execargs);
         $exec.= ');';
@@ -314,7 +315,7 @@ class qtype_programmedresp_question extends question_graded_automatically {
         // Remove the output generated
 
         $exec = 'ob_start();' . $exec . 'ob_end_clean();';
-        //debugging($exec);
+        debugging($exec);
         eval($exec);
 
         if (!is_array($results)) {
