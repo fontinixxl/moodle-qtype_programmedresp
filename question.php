@@ -82,7 +82,7 @@ class qtype_programmedresp_question extends question_graded_automatically {
         $attemptid = $this->get_attemptid_by_stepid($step->get_id());
         $this->attemptid = $this->get_question_usageid($attemptid);
         //$attemptid = $this->q_usage_id;
-        debugging("in apply attempt state. Attempt id = " . $this->attemptid);
+        //debugging("in apply attempt state. Attempt id = " . $this->attemptid);
         $modname = programmedresp_get_modname();
         // Replacing vars for random values
         if (!empty($this->options->vars)) {
@@ -92,7 +92,7 @@ class qtype_programmedresp_question extends question_graded_automatically {
                     //Add a new random value
                     $values = $this->generate_value($this->attemptid, $var, $modname);
                     if (is_null($values)) {
-                        print_error('errordb', 'qtype_programmedresp');
+                        print_error('errordb', 'qtype_programmedresp'); 
                     }
                 }
                 $values = programmedresp_unserialize($values);
@@ -146,12 +146,12 @@ class qtype_programmedresp_question extends question_graded_automatically {
      *      meaning take all the raw submitted data belonging to this question.
      */
     public function get_expected_data() {
-        debugging("get_expected_data");
+        //debugging("get_expected_data");
         $expected = array();
         foreach ($this->resps as $resp) {
             $expected[$this->field($resp->returnkey)] = PARAM_RAW_TRIMMED;
         }
-        debugging(print_r($expected));
+        //debugging(print_r($expected));
         return $expected;
     }
 
@@ -194,7 +194,7 @@ class qtype_programmedresp_question extends question_graded_automatically {
      * @return bool whether this response can be graded.
      */
     public function is_complete_response(array $response) {
-        debugging("is_complete_response");
+        //debugging("is_complete_response");
         foreach ($this->resps as $resp) {
             $answerid = $this->field($resp->returnkey);
             if (array_key_exists($answerid, $response) &&
@@ -203,7 +203,7 @@ class qtype_programmedresp_question extends question_graded_automatically {
                 return true;
             }
         }
-        debugging("Isn't complete response");
+        //debugging("Isn't complete response");
         return false;
     }
 
@@ -212,7 +212,7 @@ class qtype_programmedresp_question extends question_graded_automatically {
      */
 
     public function is_gradable_response(array $response) {
-        debugging("is_gradable_response");
+        //debugging("is_gradable_response");
         return $this->is_complete_response($response);
     }
 
@@ -221,11 +221,11 @@ class qtype_programmedresp_question extends question_graded_automatically {
         foreach ($this->resps as $resp) {
             $fieldname = $this->field($resp->returnkey);
             if (!question_utils::arrays_same_at_key($prevresponse, $newresponse, $fieldname)) {
-                debugging("is same response false");
+                //debugging("is same response false");
                 return false;
             }
         }
-        debugging("is same response true");
+        //debugging("is same response true");
         return true;
     }
 
@@ -279,19 +279,17 @@ class qtype_programmedresp_question extends question_graded_automatically {
     function get_correct_responses_without_round($attemptid) {
         global $DB;
         //echo '<br> get_correct_responses_withoyt_round';
-
         //Get the function which calculates the response
-          //JA ho obting des de get_question_options
-          if (!$programmedresp = $DB->get_record('qtype_programmedresp', array('question' => $this->id))) {
+        if (!$programmedresp = $DB->get_record('qtype_programmedresp', array('question' => $this->id))) {
 
-          return false;
-          }
+            return false;
+        }
 
-          $function = $DB->get_record('qtype_programmedresp_f', array('id' => $programmedresp->programmedrespfid));
-          $args = $DB->get_records('qtype_programmedresp_arg', array('programmedrespid' => $programmedresp->id), 'argkey ASC');
-          $vars = $DB->get_records('qtype_programmedresp_var', array('programmedrespid'=> $programmedresp->id));
+        $function = $DB->get_record('qtype_programmedresp_f', array('id' => $programmedresp->programmedrespfid));
+        $args = $DB->get_records('qtype_programmedresp_arg', array('programmedrespid' => $programmedresp->id), 'argkey ASC');
+        $vars = $DB->get_records('qtype_programmedresp_var', array('programmedrespid' => $programmedresp->id));
 
-         
+
 
         // Executes the function and stores the result/s in $results var
         //echo "<br>function name = ".$this->options->function->name;
@@ -315,7 +313,7 @@ class qtype_programmedresp_question extends question_graded_automatically {
         // Remove the output generated
 
         $exec = 'ob_start();' . $exec . 'ob_end_clean();';
-        debugging($exec);
+        //debugging($exec);
         eval($exec);
 
         if (!is_array($results)) {
@@ -353,7 +351,7 @@ class qtype_programmedresp_question extends question_graded_automatically {
                 break;
 
             case PROGRAMMEDRESP_ARG_VARIABLE:
-                echo "<br>get_exec_arg()->variable programmedresp";
+                //echo "<br>get_exec_arg()->variable programmedresp";
                 $randomvalues = $DB->get_field('qtype_programmedresp_val', 'varvalues', array('attemptid' => $attemptid, 'programmedrespvarid' => $arg->value, 'module' => $modname));
 
                 // If the random value was not previously created let's create it (for example, answer a quiz where this question has not been shown)
@@ -368,7 +366,7 @@ class qtype_programmedresp_question extends question_graded_automatically {
                     $randomvalues = $values;
                 }
                 $randomvalues = programmedresp_unserialize($randomvalues);
-                debugging("random values  = " . print_r($randomvalues));
+                //debugging("random values  = " . print_r($randomvalues));
                 break;
 
             case PROGRAMMEDRESP_ARG_CONCAT:
@@ -402,7 +400,7 @@ class qtype_programmedresp_question extends question_graded_automatically {
 
             case PROGRAMMEDRESP_ARG_EXTENDEDQUIZ:
 
-                echo "<br>get_exec_arg()->variable extendedquiz";
+                //echo "<br>get_exec_arg()->variable extendedquiz";
                 // Getting the argument variable
                 $sql = "SELECT * FROM {$CFG->prefix}extendedquiz_var_arg gva
             	        WHERE gva.quizid = '$quizid' AND gva.programmedrespargid = '{$arg->id}'";
@@ -505,7 +503,7 @@ class qtype_programmedresp_question extends question_graded_automatically {
 
         // Tolerance nominal
         if ($programmedresp->tolerancetype == PROGRAMMEDRESP_TOLERANCE_NOMINAL) {
-            echo "<br>PROGRAMMEDRESP_TOLERANCE_NOMINAL= " . $programmedresp->tolerance;
+            //echo "<br>PROGRAMMEDRESP_TOLERANCE_NOMINAL= " . $programmedresp->tolerance;
             //echo "  float value of result= ".floatval($result);
 
             if (floatval($response - $programmedresp->tolerance) <= floatval($result) && floatval($response + $programmedresp->tolerance) >= floatval($result)) {

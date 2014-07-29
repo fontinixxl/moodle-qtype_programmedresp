@@ -104,10 +104,6 @@ class qtype_programmedresp extends question_type {
         $question->options->args = $DB->get_records('qtype_programmedresp_arg', array('programmedrespid' => $question->options->programmedresp->id));
         $question->options->resps = $DB->get_records('qtype_programmedresp_resp', array('programmedrespid' => $question->options->programmedresp->id), 'returnkey ASC', 'returnkey, label');
         $question->options->concatvars = $DB->get_records_select('qtype_programmedresp_conc', "origin = 'question' AND instanceid = '{$question->options->programmedresp->id}'");
-        /*$question->options->answers = $DB->get_records('question_answers',
-                array('question' => $question->id), 'id ASC');
-         * 
-         */
         $question->options->function = $DB->get_record('qtype_programmedresp_f', array('id' => $question->options->programmedresp->programmedrespfid));
         
         parent::get_question_options($question);
