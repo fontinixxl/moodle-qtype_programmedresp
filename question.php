@@ -156,7 +156,7 @@ class qtype_programmedresp_question extends question_graded_automatically {
     }
 
     public function get_validation_error(array $response) {
-        debugging("get_validation_error");
+        //debugging("get_validation_error");
         if ($this->is_gradable_response($response)) {
             return '';
         }
@@ -297,7 +297,7 @@ class qtype_programmedresp_question extends question_graded_automatically {
 
 
         $modname = programmedresp_get_modname();
-        echo '<br>attemptid = ' . $attemptid;
+        //echo '<br>attemptid = ' . $attemptid;
         //echo "<br> modname = ".$modname;
         $quizid = programmedresp_get_quizid($attemptid, $modname);
 

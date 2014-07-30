@@ -109,12 +109,20 @@ class qtype_programmedresp_renderer extends qtype_renderer {
     }
 
     public function correct_response(question_attempt $qa) {
-        debugging("in render:correct_response");
+       // debugging("in render:correct_response");
+        
         $question = $qa->get_question();
         $right = array();
         $answers = $question->answers;
+        $tolerance = (float) $question->options->programmedresp->tolerance;
+        
+        //debugging("tolerance = ".floatval($tolerance));
+        $numdecimals =explode('.',$tolerance);
+        //debugging("tolerance string= ".print_r($tolstring));
+        //debugging("tolerance decimals". strlen($numdecimals[1]));
+        //die();
         foreach ($question->resps as $resp) {
-            $right[] = $answers[$resp->returnkey]->answer;
+            $right[] = round($answers[$resp->returnkey]->answer, strlen($numdecimals[1]));
             //$right[] = $question->make_html_inline($question->format_text($answers[$resp->returnkey]->answer, $answers[$resp->returnkey]->answerformat, $qa, 'question', 'answer', $resp->returnkey));
         }
         if (!empty($right)) {
