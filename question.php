@@ -16,52 +16,38 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * programmedresp question definition class.
+ * Programmedresp question definition class.
  *
  * @package    qtype
  * @subpackage programmedresp
- * @copyright  THEYEAR YOURNAME (YOURCONTACTINFO)
-
+ * @copyright  2014 Gerard Cuello <gerard.urv@gmail.com>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 defined('MOODLE_INTERNAL') || die();
+
 require_once($CFG->dirroot . '/question/type/programmedresp/lib.php');
-programmedresp_check_datarootfile();
+//File to store the php functions used to calculate the response
 require_once($CFG->dataroot . '/qtype_programmedresp.php');
+programmedresp_check_datarootfile();
 
 /**
  * Represents a programmedresp question.
  *
- * @copyright  THEYEAR YOURNAME (YOURCONTACTINFO)
-
+ * @copyright  2014 Gerard Cuello <gerard.urv@gmail.com>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class qtype_programmedresp_question extends question_graded_automatically {
 
     public $options;
-    public $attemptid;
-    public $q_usage_id;
+    
+    /** @var ArrayObject containing all response labels for each question */
     public $resps;
+    
+    /** @var array|null to store the correct answers for the $resps labels */
     public $answers;
 
-    /**
-     * Start a new attempt at this question, storing any information that will
-     * be needed later in the step.
-     *
-     * This is where the question can do any initialisation required on a
-     * per-attempt basis. For example, this is where the multiple choice
-     * question type randomly shuffles the choices (if that option is set).
-     *
-     * Any information about how the question has been set up for this attempt
-     * should be stored in the $step, by calling $step->set_qt_var(...).
-     *
-     * @param question_attempt_step The first step of the {@link question_attempt}
-     *      being started. Can be used to store state.
-     * @param int $varant which variant of this question to start. Will be between
-     *      1 and {@link get_num_variants()} inclusive.
-     */
+    
     public function start_attempt(question_attempt_step $step, $variant) {
-        //debugging("start attempt");
     }
 
     /**
@@ -80,41 +66,35 @@ class qtype_programmedresp_question extends question_graded_automatically {
     public function apply_attempt_state(question_attempt_step $step) {
         global $DB;
         $attemptid = $this->get_attemptid_by_stepid($step->get_id());
-        $this->attemptid = $this->get_question_usageid($attemptid);
-        //$attemptid = $this->q_usage_id;
-        //debugging("in apply attempt state. Attempt id = " . $this->attemptid);
+        $usageid = $this->get_question_usageid($attemptid);
         $modname = programmedresp_get_modname();
         // Replacing vars for random values
         if (!empty($this->options->vars)) {
             foreach ($this->options->vars as $var) {        //{$x}
                 // If this attempt doesn't have yet a value
-                if (!$values = $DB->get_field('qtype_programmedresp_val', 'varvalues', array('attemptid' => $this->attemptid, 'programmedrespvarid' => $var->id, 'module' => $modname))) {
+                if (!$values = $DB->get_field('qtype_programmedresp_val', 'varvalues', array('attemptid' => $usageid, 'programmedrespvarid' => $var->id, 'module' => $modname))) {
                     //Add a new random value
-                    $values = $this->generate_value($this->attemptid, $var, $modname);
+                    $values = $this->generate_value($usageid, $var, $modname);
                     if (is_null($values)) {
-                        print_error('errordb', 'qtype_programmedresp'); 
+                        print_error('errordb', 'qtype_programmedresp');
                     }
                 }
                 $values = programmedresp_unserialize($values);
-
                 $valuetodisplay = implode(', ', $values);
-                //echo '<br>values to display=' . $valuetodisplay;
                 $this->questiontext = str_replace('{$' . $var->varname . '}', $valuetodisplay, $this->questiontext);
             }
         }
-
-        $answers = $this->get_correct_responses_without_round($this->attemptid);
+        //get the correct answers for this question and save it in class variable
+        $answers = $this->get_correct_responses_without_round($usageid);
         foreach ($answers as $key => $ansvalue) {
             $this->answers[$key]->answer = $ansvalue;
             $this->answers[$key]->answerformat = 1;
         }
-        //print_r($this->answers);
     }
 
     public function get_correct_response() {
-
+        //The answer not calculated yet, return null
         if (empty($this->answers[0]->answer)) {
-            //debugging("getcorrect response() withous response yet");
             return null;
         }
         $response = array();
@@ -122,11 +102,13 @@ class qtype_programmedresp_question extends question_graded_automatically {
             $response[$this->field($resp->returnkey)] = $this->answers[
                     $resp->returnkey]->answer;
         }
-        //debugging("getcorrect response() with response");
+
         return $response;
     }
 
     /**
+     * Return the String identification for the response label
+     * 
      * @param int $key choice number
      * @return string the question-type variable name.
      */
@@ -134,29 +116,15 @@ class qtype_programmedresp_question extends question_graded_automatically {
         return 'progrespkey' . $key;
     }
 
-    /**
-     * What data may be included in the form submission when a student submits
-     * this question in its current state?
-     *
-     * This information is used in calls to optional_param. The parameter name
-     * has {@link question_attempt::get_field_prefix()} automatically prepended.
-     *
-     * @return array|string variable name => PARAM_... constant, or, as a special case
-     *      that should only be used in unavoidable, the constant question_attempt::USE_RAW_DATA
-     *      meaning take all the raw submitted data belonging to this question.
-     */
     public function get_expected_data() {
-        //debugging("get_expected_data");
         $expected = array();
         foreach ($this->resps as $resp) {
             $expected[$this->field($resp->returnkey)] = PARAM_RAW_TRIMMED;
         }
-        //debugging(print_r($expected));
         return $expected;
     }
 
     public function get_validation_error(array $response) {
-        //debugging("get_validation_error");
         if ($this->is_gradable_response($response)) {
             return '';
         }
@@ -164,7 +132,7 @@ class qtype_programmedresp_question extends question_graded_automatically {
     }
 
     public function grade_response(array $response) {
-        debugging("grade_response");
+
         // Stores the average grade
         $fractions = array();
         $nresponses = 0;
@@ -179,7 +147,6 @@ class qtype_programmedresp_question extends question_graded_automatically {
 
         $raw_grade = (float) array_sum($fractions) / $nresponses;
         $raw_grade = min(max((float) $raw_grade, 0.0), 1.0) * 1;
-        debugging("the fraction for this responses is : " . $raw_grade);
 
         return array($raw_grade, question_state::graded_state_for_fraction($raw_grade));
     }
@@ -194,25 +161,17 @@ class qtype_programmedresp_question extends question_graded_automatically {
      * @return bool whether this response can be graded.
      */
     public function is_complete_response(array $response) {
-        //debugging("is_complete_response");
         foreach ($this->resps as $resp) {
             $answerid = $this->field($resp->returnkey);
             if (array_key_exists($answerid, $response) &&
                     ($response[$answerid] || $response[$answerid] === '0' || $response[$answerid] === 0)) {
-                debugging("is_complete_response");
                 return true;
             }
         }
-        //debugging("Isn't complete response");
         return false;
     }
 
-    /*
-     * resposta es sempre 'answer + resp->returnkey' per identificar de forma única cada resposta dins UNA PREGUNTA
-     */
-
     public function is_gradable_response(array $response) {
-        //debugging("is_gradable_response");
         return $this->is_complete_response($response);
     }
 
@@ -221,11 +180,9 @@ class qtype_programmedresp_question extends question_graded_automatically {
         foreach ($this->resps as $resp) {
             $fieldname = $this->field($resp->returnkey);
             if (!question_utils::arrays_same_at_key($prevresponse, $newresponse, $fieldname)) {
-                //debugging("is same response false");
                 return false;
             }
         }
-        //debugging("is same response true");
         return true;
     }
 
@@ -237,7 +194,14 @@ class qtype_programmedresp_question extends question_graded_automatically {
         return array();
     }
 
-    //helper methods
+    public function is_correct_answer($ansid, question_attempt $qa) {
+        
+        $fraction = $this->test_programmed_response($this->answers[$ansid]->answer,
+                $qa->get_last_qt_var($this->field($ansid)), $this->options->programmedresp);
+        return $fraction;
+    }
+
+    //Helper methods
 
     /**
      * Generates a value based on $var attributes and inserts in into DB
@@ -247,13 +211,11 @@ class qtype_programmedresp_question extends question_graded_automatically {
      * @param $modname
      * @return null|string
      */
-    //no necessito insertarlos a la base de dades específica
     function generate_value($attemptid, $var, $modname = false) {
         global $DB;
         if (!$modname) {
             $modname = programmedresp_get_modname();
         }
-
         $programmedrespval->module = $modname;
         $programmedrespval->attemptid = $attemptid;
         $programmedrespval->programmedrespvarid = $var->id;
@@ -262,26 +224,22 @@ class qtype_programmedresp_question extends question_graded_automatically {
             return null;
         }
         $values = $programmedrespval->varvalues;
-
         return $values;
-
 
         //return programmedresp_serialize(programmedresp_get_random_value($var));
     }
 
     /**
-     * Calculates the question response through the selected function and the random args from question_programmedresp_val
+     * Calculates the question response through the selected function 
+     * and the random args from question_programmedresp_val
      *
-     * @param $question
-     * @param $state
+     * @param $attemptid 
      * @return array Correct responses with format array('ARGNUM' => VALUE, ....)
      */
     function get_correct_responses_without_round($attemptid) {
         global $DB;
-        //echo '<br> get_correct_responses_withoyt_round';
-        //Get the function which calculates the response
-        if (!$programmedresp = $DB->get_record('qtype_programmedresp', array('question' => $this->id))) {
 
+        if (!$programmedresp = $DB->get_record('qtype_programmedresp', array('question' => $this->id))) {
             return false;
         }
 
@@ -289,31 +247,19 @@ class qtype_programmedresp_question extends question_graded_automatically {
         $args = $DB->get_records('qtype_programmedresp_arg', array('programmedrespid' => $programmedresp->id), 'argkey ASC');
         $vars = $DB->get_records('qtype_programmedresp_var', array('programmedrespid' => $programmedresp->id));
 
-
-
         // Executes the function and stores the result/s in $results var
-        //echo "<br>function name = ".$this->options->function->name;
         $exec = '$results = ' . $function->name . '(';
-
-
         $modname = programmedresp_get_modname();
-        //echo '<br>attemptid = ' . $attemptid;
-        //echo "<br> modname = ".$modname;
         $quizid = programmedresp_get_quizid($attemptid, $modname);
 
-        //echo "<br> quizid = " . $quizid;
-
         foreach ($args as $arg) {
-
             $execargs[] = $this->get_exec_arg($arg, $vars, $attemptid, $quizid);
         }
         $exec.= implode(', ', $execargs);
         $exec.= ');';
 
         // Remove the output generated
-
         $exec = 'ob_start();' . $exec . 'ob_end_clean();';
-        //debugging($exec);
         eval($exec);
 
         if (!is_array($results)) {
@@ -351,12 +297,11 @@ class qtype_programmedresp_question extends question_graded_automatically {
                 break;
 
             case PROGRAMMEDRESP_ARG_VARIABLE:
-                //echo "<br>get_exec_arg()->variable programmedresp";
+
                 $randomvalues = $DB->get_field('qtype_programmedresp_val', 'varvalues', array('attemptid' => $attemptid, 'programmedrespvarid' => $arg->value, 'module' => $modname));
 
                 // If the random value was not previously created let's create it (for example, answer a quiz where this question has not been shown)
                 if (!$randomvalues) {
-
                     // Var data
                     $vardata = $DB->get_record('qtype_programmedresp_var', array('id' => $arg->value));
                     $values = $this->generate_value($attemptid, $vardata);
@@ -366,7 +311,7 @@ class qtype_programmedresp_question extends question_graded_automatically {
                     $randomvalues = $values;
                 }
                 $randomvalues = programmedresp_unserialize($randomvalues);
-                //debugging("random values  = " . print_r($randomvalues));
+    
                 break;
 
             case PROGRAMMEDRESP_ARG_CONCAT:
@@ -400,7 +345,6 @@ class qtype_programmedresp_question extends question_graded_automatically {
 
             case PROGRAMMEDRESP_ARG_EXTENDEDQUIZ:
 
-                //echo "<br>get_exec_arg()->variable extendedquiz";
                 // Getting the argument variable
                 $sql = "SELECT * FROM {$CFG->prefix}extendedquiz_var_arg gva
             	        WHERE gva.quizid = '$quizid' AND gva.programmedrespargid = '{$arg->id}'";
@@ -409,11 +353,6 @@ class qtype_programmedresp_question extends question_graded_automatically {
                 if (!$vardata = $DB->get_record_sql($sql)) {
                     print_error('errorargumentnoassigned', 'qtype_programmedresp');
                 }
-
-
-                /* if (!$vardata = $DB->get_record('extendedquiz_var_arg', array('quizid' => $quizid, 'programmedrespargid' => $arg->id))) {
-                  print_error('errorargumentnoassigned', 'qtype_programmedresp');
-                  } */
 
                 // To store the values
                 $randomvalues = array();
@@ -503,8 +442,6 @@ class qtype_programmedresp_question extends question_graded_automatically {
 
         // Tolerance nominal
         if ($programmedresp->tolerancetype == PROGRAMMEDRESP_TOLERANCE_NOMINAL) {
-            //echo "<br>PROGRAMMEDRESP_TOLERANCE_NOMINAL= " . $programmedresp->tolerance;
-            //echo "  float value of result= ".floatval($result);
 
             if (floatval($response - $programmedresp->tolerance) <= floatval($result) && floatval($response + $programmedresp->tolerance) >= floatval($result)) {
                 return 1;
@@ -519,6 +456,11 @@ class qtype_programmedresp_question extends question_graded_automatically {
         return 0;
     }
 
+    /**
+     * Get attemptid by step id
+     * @param int $stepid unique identification for this step
+     * @return int $attemptid 
+     */
     public function get_attemptid_by_stepid($stepid) {
         global $DB;
 
@@ -535,19 +477,6 @@ class qtype_programmedresp_question extends question_graded_automatically {
             echo "<br>upss.... get_question_usageid()";
         }
         return $questionusage;
-    }
-
-    public function is_correct_answer($ansid, question_attempt $qa) {
-        $fraction = $this->test_programmed_response($this->answers[$ansid]->answer, $qa->get_last_qt_var($this->field($ansid)), $this->options->programmedresp);
-
-        return $fraction;
-    }
-
-    public function make_html_inline($html) {
-        $html = preg_replace('~\s*<p>\s*~u', '', $html);
-        $html = preg_replace('~\s*</p>\s*~u', '<br />', $html);
-        $html = preg_replace('~(<br\s*/?>)+$~u', '', $html);
-        return trim($html);
     }
 
 }

@@ -16,31 +16,27 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * programmedresp question renderer class.
+ * Programmedresp question renderer class.
  *
- * @package    qtype
- * @subpackage programmedresp
- * @copyright  THEYEAR YOURNAME (YOURCONTACTINFO)
-
+ * @package    qtype_programmedresp
+ * @copyright  2014 Gerard Cuello <gerard.urv@gmail.com>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-defined('MOODLE_INTERNAL') || die();
-require_once($CFG->dirroot . '/question/type/programmedresp/lib.php');      //??¿
+
+require_once($CFG->dirroot . '/question/type/programmedresp/lib.php');      
 
 /**
  * Generates the output for programmedresp questions.
  *
- * @copyright  THEYEAR YOURNAME (YOURCONTACTINFO)
-
+ * @copyright  2014 Gerard Cuello <gerard.urv@gmail.com>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class qtype_programmedresp_renderer extends qtype_renderer {
 
-    public function formulation_and_controls(question_attempt $qa, question_display_options $options) {
+    public function formulation_and_controls(question_attempt $qa,
+            question_display_options $options) {
 
         $question = $qa->get_question();
-        //$response = $question->get_response($qa);
-        //$inputname = $qa->get_qt_field_name('answer');
         $inputattributes = array(
             'type' => 'text',
         );
@@ -53,11 +49,12 @@ class qtype_programmedresp_renderer extends qtype_renderer {
         $feedbackimg = array();
         $classes = array();
         foreach ($question->resps as $resp) {
-
-            $inputattributes['name'] = $qa->get_qt_field_name('progrespkey' . $resp->returnkey);
-            $inputattributes['value'] = $qa->get_last_qt_var('progrespkey' . $resp->returnkey);
-            $inputattributes['id'] = $qa->get_qt_field_name('progrespkey' . $resp->returnkey);
-
+            $inputattributes['name'] = $qa->get_qt_field_name('progrespkey'.
+                    $resp->returnkey);
+            $inputattributes['value'] = $qa->get_last_qt_var('progrespkey'.
+                    $resp->returnkey);
+            $inputattributes['id'] = $qa->get_qt_field_name('progrespkey'.
+                    $resp->returnkey);
 
             $hidden = '';
             if (!$options->readonly) {
@@ -67,10 +64,10 @@ class qtype_programmedresp_renderer extends qtype_renderer {
                             'value' => 0,
                 ));
             }
-            $inputs[] = html_writer::tag('bel', $resp->label, array('for' => $inputattributes['id'], 'class' => 'programmedresp')) .
+            $inputs[] = html_writer::tag('bel', $resp->label,
+                    array('for' => $inputattributes['id'], 'class' => 'programmedresp')).
                     html_writer::empty_tag('input', $inputattributes);
-            //$inputs[] = $hidden . html_writer::empty_tag('input', $inputattributes) .
-            //        html_writer::tag('bel', $resp->label, array('for' => $inputattributes['id']));
+            
             $class = 'r' . ($resp->returnkey % 2);
             if ($options->correctness) {
                 $is_right = $question->is_correct_answer($resp->returnkey, $qa);
@@ -83,23 +80,23 @@ class qtype_programmedresp_renderer extends qtype_renderer {
         }
 
         $result = '';
-        $result .= html_writer::tag('div', $question->format_questiontext($qa), array('class' => 'qtext'));
+        $result .= html_writer::tag('div', $question->format_questiontext($qa),
+                array('class' => 'qtext'));
 
         $result .= html_writer::start_tag('div', array('class' => 'ablock'));
-        //$result .= html_writer::tag('div', 'Introdueix les respostes', array('class' => 'prompt'));
-
         $result .= html_writer::start_tag('div', array('class' => 'answer'));
         foreach ($inputs as $key => $input) {
-            $result .= html_writer::tag('div', $input . ' ' . $feedbackimg[$key], array('class' => $classes[$key])) . "\n";
+            $result .= html_writer::tag('div', $input . ' ' . $feedbackimg[$key],
+                    array('class' => $classes[$key])) . "\n";
         }
         $result .= html_writer::end_tag('div'); // answer
-
         $result .= html_writer::end_tag('div'); // ablock
-
         if ($qa->get_state() == question_state::$invalid) {
-            $result .= html_writer::nonempty_tag('div', $question->get_validation_error($qa->get_last_qt_data()), array('class' => 'validationerror'));
+            $errorvalidate = $question->get_validation_error($qa->get_last_qt_data());
+            $result .= html_writer::nonempty_tag('div', $errorvalidate,
+                    array('class' => 'validationerror'));
         }
-
+        
         return $result;
     }
 
@@ -109,21 +106,14 @@ class qtype_programmedresp_renderer extends qtype_renderer {
     }
 
     public function correct_response(question_attempt $qa) {
-       // debugging("in render:correct_response");
-        
         $question = $qa->get_question();
-        $right = array();
         $answers = $question->answers;
         $tolerance = (float) $question->options->programmedresp->tolerance;
-        
-        //debugging("tolerance = ".floatval($tolerance));
         $numdecimals =explode('.',$tolerance);
-        //debugging("tolerance string= ".print_r($tolstring));
-        //debugging("tolerance decimals". strlen($numdecimals[1]));
-        //die();
+        
+        $right = array();
         foreach ($question->resps as $resp) {
             $right[] = round($answers[$resp->returnkey]->answer, strlen($numdecimals[1]));
-            //$right[] = $question->make_html_inline($question->format_text($answers[$resp->returnkey]->answer, $answers[$resp->returnkey]->answerformat, $qa, 'question', 'answer', $resp->returnkey));
         }
         if (!empty($right)) {
             return get_string('correctansweris', 'qtype_multichoice', implode(', ', $right));

@@ -7,7 +7,6 @@
  * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
  * @package qtype_programmedresp
  */
-
 require_once('../../../config.php');
 
 global $CFG, $PAGE;
@@ -53,26 +52,16 @@ switch ($action) {
         // Insert category
         if ($data = $form->get_data()) {
 
-            $catdata->parent = (int)$data->parent;
-            
+            $catdata->parent = (int) $data->parent;
+
             $catdata->name = $data->name;
             if (!$catdata->id = $DB->insert_record('qtype_programmedresp_fcat', $catdata)) {
                 print_error('errordb', 'qtype_programmedresp');
             }
-            
-            $params = array($catdata->id , $catdata->name, "id_functioncategory", $data->parent);
+
+            $params = array($catdata->id, $catdata->name, "id_functioncategory", $data->parent);
             $PAGE->requires->js_init_call('exec_js_manage', $params);
-            
-            
-            /*echo "<script type=\"text/javascript\">//<![CDATA[\n" .
-            "var wwwroot = '" . $CFG->wwwroot . "';\n" .
-            "add_to_parent(\"" . $catdata->id . "\", \"" . $catdata->name . "\", \"id_functioncategory\", \"" . $data->parent . "\");\n" .
-            "opened = true;\n" .
-            "var categorieselement = window.opener.document.getElementById(\"id_functioncategory\");\n" .
-            "update_addfunctionurl();\n" .
-            "window.close();\n" .
-            "//]]></script>\n";
-            */
+
             // Display form
         } else {
             $form->display();
@@ -116,7 +105,7 @@ switch ($action) {
 
                 foreach ($functions as $function) {
                     if ($DB->get_record('qtype_programmedresp_f', array('name' => $function->name)) || programmedresp_get_function_code($function->name)) {
-                        notify($function->name . ': ' . get_string('errorfunctionalreadycreated', 'qtype_programmedresp'), 'error');
+                        notify($function->name . ': ' . get_string('errorfunctionalreadycreated', 'qtype_programmedresp'), 'error', 'center');
                         continue;
                     }
                     $fdata->programmedrespfcatid = $fcatid;
@@ -131,7 +120,7 @@ switch ($action) {
                         print_error('errordb', 'qtype_programmedresp');
                     }
 
-                    notify(get_string('functionadded', 'qtype_programmedresp', $function->name), 'green');
+                    notify(get_string('functionadded', 'qtype_programmedresp', $function->name), 'notifysuccess', 'center');
                     programmedresp_add_repository_function($function->functioncode);
 
                     // Array to add to the parent select functions form element
@@ -150,7 +139,7 @@ switch ($action) {
             // Add the functions created to the form
             if (!empty($fdatas)) {
                 foreach ($fdatas as $f) {
-                    $PAGE->requires->js_init_call('exec_js_funct_manage', array($f->id , $f->name, "id_programmedrespfid"));
+                    $PAGE->requires->js_init_call('exec_js_funct_manage', array($f->id, $f->name, "id_programmedrespfid"));
                 }
             }
         }

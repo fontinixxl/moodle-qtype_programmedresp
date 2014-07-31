@@ -49,7 +49,7 @@
     $string['errorsyntax'] = 'Syntax error';
     $string['firstselectcategory'] = 'In order to insert functions you must select a category';
     $string['function'] = 'Function';
-    $string['functionadded'] = 'Function $a added';
+    $string['functionadded'] = 'Function <strong>{$a}</strong> added';
     $string['functionstextarea'] = 'Paste functions';
     $string['functionarguments'] = 'Function arguments';
     $string['functioncategory'] = 'Function category';
