@@ -64,19 +64,26 @@ class qtype_programmedresp_renderer extends qtype_renderer {
                             'value' => 0,
                 ));
             }
-            $inputs[] = html_writer::tag('bel', $resp->label,
-                    array('for' => $inputattributes['id'], 'class' => 'programmedresp')).
-                    html_writer::empty_tag('input', $inputattributes);
+
             
             $class = 'r' . ($resp->returnkey % 2);
             if ($options->correctness) {
-                $is_right = $question->is_correct_answer($resp->returnkey, $qa);
-                $feedbackimg[] = $this->feedback_image($is_right);
-                $class .= ' ' . $this->feedback_class($is_right);
+                $fraction = $question->is_correct_answer($resp->returnkey, $qa);
+                if(!$fraction){
+                    $fraction = 0;
+                }
+                $feedbackimg[$resp->returnkey] = $this->feedback_image($fraction);
+                $inputattributes['class'] = $this->feedback_class($fraction);
+                //$class .= ' ' . $this->feedback_class($fraction);
             } else {
-                $feedbackimg[] = '';
+                $feedbackimg[$resp->returnkey] = '';
             }
-            $classes[] = $class;
+            $classes[$resp->returnkey] = $class;
+            
+            $inputs[$resp->returnkey] = html_writer::tag('bel', $resp->label,
+                    array('for' => $inputattributes['id'], 'class' => 'programmedresp')).
+                    html_writer::empty_tag('input', $inputattributes);
+            
         }
 
         $result = '';

@@ -53,7 +53,7 @@ class prgrammedresp_output {
 
         // If there aren't vars just notify it
         if (!$vars = programmedresp_get_question_vars($questiontext)) {
-            echo "<br>no troba variable del questiontext!";
+            //echo "<br>no troba variable del questiontext!";
             $this->print_form_htmlraw('<span class="programmedresp_novars">' . get_string('novars', 'qtype_programmedresp') . '</span>');
         }
 
