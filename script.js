@@ -17,12 +17,12 @@ function get_questiontext() {
     if (window.frames.length > 0) {
         questiontextvalue = frames[0].document.body.innerHTML;        
         
-    } else if (document.getElementById("id_questiontext")) {
-        questiontextvalue = document.getElementById("id_questiontext").innerHTML;
+    } else if (document.getElementById("id_questiontexteditable")) {
+        questiontextvalue = document.getElementById("id_questiontexteditable").innerHTML;
     }
     
     if (!questiontextvalue) {
-    	alert("Ha trobat variables");
+    //alert("No troba id_questiontext");
         return false;
     }
     
@@ -58,7 +58,7 @@ function display_vars(element, edit, displayfunctionbutton) {
         functionbuttonstr = '&displayfunctionbutton=true';
     }
     
-    var varsheader = document.getElementById("varsheader");
+    var varsheader = document.getElementById("id_varsheader");
     varsheader.style.visibility = "visible";
     varsheader.style.display = "inline";
     

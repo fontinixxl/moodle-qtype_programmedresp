@@ -5,7 +5,7 @@
 onload = function() {
 	
 	var vheader;
-	if (vheader = document.getElementById("varsheader")) {
+	if (vheader = document.getElementById("id_varsheader")) {
 		vheader.style.visibility = "hidden";
 		vheader.style.display = "none";
 	}	

@@ -44,8 +44,7 @@ class qtype_programmedresp_edit_form extends question_edit_form {
         //GERARD
         $id = required_param('cmid', PARAM_INT);
 
-
-        $caneditfunctions = has_capability('moodle/question:config', get_context_instance(CONTEXT_SYSTEM));
+        $caneditfunctions = has_capability('moodle/question:config', context_system::instance());
 
 
         // To lower than 1.9.9
