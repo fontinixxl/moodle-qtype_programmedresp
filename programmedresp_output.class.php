@@ -4,7 +4,7 @@ class prgrammedresp_output {
 
     var $mform;
 
-      function prgrammedresp_output($mform){
+      function prgrammedresp_output(&$mform){
       $this->mform = $mform;
       }
      
@@ -13,9 +13,14 @@ class prgrammedresp_output {
         $this->mform = $mform;
     }
 */
-    function add_concat_var($name, $vars, $values = false, $return = false) {
+    function add_concat_var($name, $vars, $values = false, $return = false, $readablename = false) {
 
-        $concatdiv = '<strong>' . $name . '</strong><br/>';
+        //$concatdiv = '<strong>' . $name . '</strong><br/>';
+        if(!$readablename){
+            $readablename = $name;
+        }
+        
+        $concatdiv = '<input type="text" id="n'.$name.'" name="n'.$name.'" value="'.$readablename.'" ></br>';
         $concatdiv.= '<select id="' . $name . '" name="' . $name . '[]" multiple="multiple">';
 
         // Marking the selected vars
@@ -50,10 +55,9 @@ class prgrammedresp_output {
      * @param array $quizconcatvars The already created guided quiz concat vars
      */
     function display_vars($questiontext = false, $args = false, $displayfunctionbutton = true, $quizconcatvars = false) {
-
+        
         // If there aren't vars just notify it
         if (!$vars = programmedresp_get_question_vars($questiontext)) {
-            //echo "<br>no troba variable del questiontext!";
             $this->print_form_htmlraw('<span class="programmedresp_novars">' . get_string('novars', 'qtype_programmedresp') . '</span>');
         }
 
@@ -82,7 +86,7 @@ class prgrammedresp_output {
                     if (PROGRAMMEDRESP_ARG_CONCAT == $arg->type) {
 
                         $concatdata = programmedresp_get_concatvar_data($arg->value);
-                        $concatdiv.= $this->add_concat_var($concatdata->name, $vars, $concatdata->values, true);
+                        $concatdiv.= $this->add_concat_var($concatdata->name, $vars, $concatdata->values, true, $concatdata->readablename);
                     }
                 }
             }
@@ -91,18 +95,20 @@ class prgrammedresp_output {
             if ($quizconcatvars) {
                 foreach ($quizconcatvars as $concatdata) {
                     $concatdata->values = programmedresp_unserialize($concatdata->vars);
-                    $concatdiv.= $this->add_concat_var($concatdata->name, $vars, $concatdata->values, true);
+                    $concatdiv.= $this->add_concat_var($concatdata->name, $vars, $concatdata->values, true, $concatdata->readablename);
                 }
             }
 
             $concatdiv.= '</div>';
             $this->print_form_html($concatdiv);
-            $this->print_form_html('<a href="#" onclick="add_concat_var();return false;">' . get_string("addconcatvar", "qtype_programmedresp") . '</a><br/><br/>');
+            $this->print_form_html('<a href="#" onclick="add_concat_var();return false;">' . get_string("addconcatvar", "qtype_programmedresp") . '</a><br/>');
         }
 
         // TODO: Add a check_maximum and check_minimum to ensure max > min
         // The guided quiz should not display the functions button
+        /*
         if ($displayfunctionbutton) {
+            
             $attrs['onclick'] = 'return functionsection_visible();';
 
             // Button text
@@ -113,6 +119,8 @@ class prgrammedresp_output {
             }
             $this->print_form_button($buttonlabel, 'function', $attrs);
         }
+         * 
+         */
     }
 
     /**
@@ -169,15 +177,19 @@ class prgrammedresp_output {
         $questiontextvars = programmedresp_get_question_vars($questiontext);
         
         // Concatenated vars (if it's a new insertion getting from _GET if not from $args array)
+        //ex: concatvars[concatvar_0] = "nom donat per l'usuari"
         $concatvars = programmedresp_get_concat_vars($args);
 
         // Map arg type id => arg type name (fixed, variable or guidedquiz)
         $argtypes = programmedresp_get_argtypes_mapping();
             
-        $this->print_form_htmlraw('<br/><div class="programmedresp_functiondescription">'.format_text($functiondata->description, FORMAT_MOODLE).'</div>');
+        $this->print_form_htmlraw('<br/><div class="programmedresp_functiondescription">'.stripslashes(format_text($functiondata->description, FORMAT_MOODLE)).'</div>');
         
         // Assign arguments
-        $this->print_form_title('<strong>'.get_string('functionarguments', 'qtype_programmedresp').'</strong>');
+        $argstitle = '<strong>'.get_string('functionarguments', 'qtype_programmedresp').'</strong>';
+        $displaylink = '<a href="#" onclick="return functionsection_visible();">'.get_string("refresh", "qtype_programmedresp").'</a>';
+        $argstitle .= '<br>( '. $displaylink . ' )';
+        $this->print_form_title($argstitle);
         foreach ($functiondata->params as $key => $param) {
 
         	// Various param types
@@ -265,13 +277,13 @@ class prgrammedresp_output {
             
 	            // Concat vars
 	            $paramelement.= '<select name="concat_'.$key.'" id="id_argument_concat_'.$key.'" class="'.$concatclass.'">';
-	            foreach ($concatvars as $varname) {
+	            foreach ($concatvars as $varname => $varvalue) {
 	            	
 	            	$selectedstr = '';
 	            	if ($concatvalue == $varname) {
 	            		$selectedstr = 'selected="selected"';
 	            	}
-	            	$paramelement.= '<option value="'.$varname.'" '.$selectedstr.'>'.get_string("var", "qtype_programmedresp").' '.$varname.'</option>';
+	            	$paramelement.= '<option value="'.$varname.'" '.$selectedstr.'>'.get_string("var", "qtype_programmedresp").' '.$varvalue.'</option>';
 	            }
 	            $paramelement.= '</select>';
             }
@@ -283,7 +295,7 @@ class prgrammedresp_output {
         
         
         // To assign labels
-        $this->print_form_htmlraw('<br/><br/>');
+        $this->print_form_htmlraw('<br/>');
         
         // Link to show the labels edition elements
         $this->print_form_htmlraw('<div id="id_responselabelslink">');
@@ -339,5 +351,3 @@ class prgrammedresp_output {
     }
 
 }
-
-?>

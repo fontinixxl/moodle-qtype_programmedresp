@@ -20,7 +20,7 @@
  *
  * @package    qtype
  * @subpackage programmedresp
- * @copyright  THEYEAR Gerard Cuello (YOURCONTACTINFO)
+ * @copyright  THEYEAR Gerard Cuello (<gerard.urv@gmail.com>)
 
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -49,7 +49,7 @@ class qtype_programmedresp_edit_form extends question_edit_form {
 
         // To lower than 1.9.9
         $PAGE->requires->js('/question/type/programmedresp/script.js');
-
+        echo '<link rel="stylesheet" type="text/css" href="'.$CFG->wwwroot.'/question/type/programmedresp/styles.css" />';
         // Adding wwwroot
         echo "<script type=\"text/javascript\">//<![CDATA[\n" .
         "this.wwwroot = '" . $CFG->wwwroot . "';\n" .
@@ -57,8 +57,8 @@ class qtype_programmedresp_edit_form extends question_edit_form {
 
         // Data
         $categories = $DB->get_records('qtype_programmedresp_fcat', array(), 'id ASC', 'id, parent, name');
-        echo "<br>Editing form: question->id = " . $this->question->id;
-        echo '<br> intenta recuperar el contingut de:  ' . $CFG->dataroot . '/qtype_programmedresp.php';
+        
+
         // If there are previous data
         if (!empty($this->question->id)) {
             $this->programmedresp = $DB->get_record('qtype_programmedresp', array('question' => $this->question->id));
@@ -66,10 +66,6 @@ class qtype_programmedresp_edit_form extends question_edit_form {
             $this->programmedresp_vars = $DB->get_records('qtype_programmedresp_var', array('programmedrespid' => $this->programmedresp->id));
             $this->programmedresp_args = $DB->get_records('qtype_programmedresp_arg', array('programmedrespid' => $this->programmedresp->id), '', 'argkey, type, value');
             $this->programmedresp_resps = $DB->get_records('qtype_programmedresp_resp', array('programmedrespid' => $this->programmedresp->id), 'returnkey ASC', 'returnkey, label');
-        }
-
-        if (isset($this->programmedresp_args)) {
-            echo "<br> els arguments si existeixen";
         }
 
         $catoptions = array(0 => '&nbsp;(' . get_string('selectcategory', 'qtype_programmedresp') . ')&nbsp;');
@@ -171,7 +167,7 @@ class qtype_programmedresp_edit_form extends question_edit_form {
         $mform->addRule('tolerance', null, 'numeric', null, 'client');
         $mform->setType('tolerance', PARAM_NUMBER);
         
-        $this->add_interactive_settings(true, true);
+        //$this->add_interactive_settings(true, true);
 
         // Add the onload javascript to hide next steps
         if (empty($this->question->id)) {
@@ -181,7 +177,7 @@ class qtype_programmedresp_edit_form extends question_edit_form {
 
     public function set_data($question) {
         //parent::set_data($question);
-        echo '<br>In function set_data()';
+        //echo '<br>In function set_data()';
         //echo 'print question object : '.$question;
         if (!empty($question->id)) {
 

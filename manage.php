@@ -89,7 +89,7 @@ switch ($action) {
 
             $tokenizer = new functions_tokenizer();
             if (!$tokenizer->set_code($data->functionstextarea)) {
-                notify(get_string('errorsyntax', 'qtype_programmedresp'), 'error');
+                notify(get_string('errorsyntax', 'qtype_programmedresp'), 'notifyproblem');
                 $form->set_data(array('functionstextarea' => $data->functionstextarea));
             } else {
                 $functions = $tokenizer->get_functions();
@@ -97,15 +97,14 @@ switch ($action) {
 
             // If there aren't valid functions display the form again
             if (empty($functions)) {
-                notify(get_string('errornovalidfunctions', 'qtype_programmedresp'), 'error');
+                notify(get_string('errornovalidfunctions', 'qtype_programmedresp'), 'notifyproblem');
                 $form->set_data(array('functionstextarea' => $data->functionstextarea));
 
                 // Add functions data
             } else {
-
                 foreach ($functions as $function) {
                     if ($DB->get_record('qtype_programmedresp_f', array('name' => $function->name)) || programmedresp_get_function_code($function->name)) {
-                        notify($function->name . ': ' . get_string('errorfunctionalreadycreated', 'qtype_programmedresp'), 'error', 'center');
+                        notify('<strong>'.$function->name . '</strong>: ' . get_string('errorfunctionalreadycreated', 'qtype_programmedresp'), 'notifyproblem');
                         continue;
                     }
                     $fdata->programmedrespfcatid = $fcatid;

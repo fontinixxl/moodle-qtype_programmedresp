@@ -55,7 +55,7 @@ class qtype_programmedresp extends question_type {
     public function save_question_options($question) {
         global $DB;
         //print_r($question);
-        debugging('save question options FUNCTION', DEBUG_DEVELOPER);
+        //debugging('save question options FUNCTION', DEBUG_DEVELOPER);
 
         // It does't return the inserted/updated qtype_programmedresp->id
         parent::save_question_options($question);
@@ -134,10 +134,9 @@ class qtype_programmedresp extends question_type {
      * @param $programmedresp
      */
     function save_question_options_from_form($question, $programmedresp) {
-        debugging('save question options from form FUNCTION', DEBUG_DEVELOPER);
+        //debugging('save question options from form FUNCTION', DEBUG_DEVELOPER);
         global $DB;
         $argtypesmapping = programmedresp_get_argtypes_mapping();
-
         $i = 0;
         foreach ($_POST as $varname => $value) {
 
@@ -157,8 +156,11 @@ class qtype_programmedresp extends question_type {
                 // There are a form element for each var type (fixed, variable, concat, guidedquiz)
                 // $argvalue contains the value of the selected element
                 $argvalue = $_POST[$argtypesmapping[intval($value)] . "_" . $args[$i]->argkey];
+                //debugging($argvalue);
+                
                 $args[$i]->value = clean_param($argvalue, PARAM_TEXT);  // integer or float if it's fixed or a varname
-
+                debugging("args[.$i.]->value = ".$args[$i]->value);
+                
                 $i++;
 
                 // Insert a function response
@@ -216,8 +218,14 @@ class qtype_programmedresp extends question_type {
                     $concatnum = intval(substr($arg->value, 10));
                     if (!$concatvalues = optional_param('concatvar_' . $concatnum, false, PARAM_ALPHANUM)) {
                         print_error('errorcantfindvar', 'qtype_programmedresp', $arg->value);
+                    }else{
+                        if (!$concreadablename = optional_param('nconcatvar_' . $concatnum, false, PARAM_ALPHANUM)) {
+                            print_error('errorcantfindvar', 'qtype_programmedresp', $arg->value);
+                        }
                     }
-
+                    debugging("concatvalues".print_r($concatvalues));
+                    debugging("concatvar_readablename = ".$concreadablename);
+                    
                     // Inserting/Updating the new concat var
                     $concatvarname = 'concatvar_' . $concatnum;
                     if (!$concatobj = $DB->get_record('qtype_programmedresp_conc', array('origin' => 'question', 'instanceid' => $programmedresp->id, 'name' => $concatvarname))) {
@@ -225,6 +233,7 @@ class qtype_programmedresp extends question_type {
                         $concatobj->origin = 'question';
                         $concatobj->instanceid = $programmedresp->id;
                         $concatobj->name = $concatvarname;
+                        $concatobj->readablename = $concreadablename;
                         $concatobj->vars = programmedresp_serialize($concatvalues);
                         if (!$concatobj->id = $DB->insert_record('qtype_programmedresp_conc', $concatobj)) {
                             print_error('errordb', 'qtype_programmedresp');
@@ -245,18 +254,10 @@ class qtype_programmedresp extends question_type {
                     }
 
                     // Insert
-                    /*
-                     * GERARD:
-                     * Si és ExtendedQuiz no cal tractar-ho, ja que no hi podem fer res.Es guarda i ja està!
-                     */
                 } else {
                     if (!$DB->insert_record('qtype_programmedresp_arg', $arg)) {
                         print_error('errordb', 'qtype_programmedresp');
                     }
-                }
-                echo '<br>arg type:<br>';
-                if ($arg->type == PROGRAMMEDRESP_ARG_EXTENDEDQUIZ) {
-                    echo '<br>variable EXTENDED QUIZ<br>';
                 }
             }
         }

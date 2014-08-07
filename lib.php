@@ -98,7 +98,7 @@ function programmedresp_get_concat_vars($args = false) {
 
 			if (PROGRAMMEDRESP_ARG_CONCAT == $arg->type) {
 				$concatdata = programmedresp_get_concatvar_data($arg->value);
-				$concatvars[$concatdata->name] = $concatdata->name;
+				$concatvars[$concatdata->name] = $concatdata->readablename;
 			}
 		}
 
@@ -111,7 +111,12 @@ function programmedresp_get_concat_vars($args = false) {
 
 			$varname = 'concatvar_'.$concatnum;
 			if ($concat = optional_param($varname, false, PARAM_ALPHANUM)) {
-				$concatvars[$varname] = $varname;
+                            if($cancatname = optional_param('n'.$varname, false, PARAM_ALPHANUM)){
+                                $concatvars[$varname] = $cancatname;
+                            }else{
+                                echo ("no funciona la recepcio del nom de la variable concatenada");
+                            }
+				//$concatvars[$varname] = $varname;
 			}
 		}
 	}

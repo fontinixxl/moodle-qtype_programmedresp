@@ -34,11 +34,12 @@
 }
 
 /*EDITING QUESTION*/
-.programmedresp_functiondescription {
+.programmedresp_functiondescription { 
     border-style: solid;
+    border-color: #0070A8;
     width: 650px;
-    margin: 30px auto 30px auto;
-    padding: 3px;
+    margin: 0px auto 30px auto;
+    padding: 5px;
 }
 
 #id_responseslabels {
