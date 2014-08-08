@@ -465,7 +465,7 @@ class qtype_programmedresp_question extends question_graded_automatically {
         global $DB;
 
         if (!$attempid = $DB->get_field('question_attempt_steps', 'questionattemptid', array('id' => $stepid))) {
-            echo "<br>upss.... get_attemptid_by_stepid()";
+            //TODO : show message error
         }
         return $attempid;
     }
@@ -474,7 +474,7 @@ class qtype_programmedresp_question extends question_graded_automatically {
         global $DB;
 
         if (!$questionusage = $DB->get_field('question_attempts', 'questionusageid', array('id' => $attemptid))) {
-            echo "<br>upss.... get_question_usageid()";
+            //TODO: SHOW MESSAGE ERROR
         }
         return $questionusage;
     }

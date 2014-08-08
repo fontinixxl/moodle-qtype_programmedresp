@@ -94,8 +94,6 @@ class qtype_programmedresp extends question_type {
      */
     public function get_question_options($question) {
         global $DB;
-        debugging("QUETIONTYPE:get_question_options");
-
         $question->options->programmedresp = $DB->get_record('qtype_programmedresp', array('question' => $question->id));
         if (!$question->options->programmedresp) {
             return false;
@@ -116,7 +114,6 @@ class qtype_programmedresp extends question_type {
      * @param object $questiondata the question data loaded from the database.=> la de get_question_option()
      */
     protected function initialise_question_instance(question_definition $question, $questiondata) {
-        debugging("initialise_question_instance");
         parent::initialise_question_instance($question, $questiondata);
         $question->resps = $questiondata->options->resps;
         $question->options = $questiondata->options;
@@ -159,7 +156,6 @@ class qtype_programmedresp extends question_type {
                 //debugging($argvalue);
                 
                 $args[$i]->value = clean_param($argvalue, PARAM_TEXT);  // integer or float if it's fixed or a varname
-                debugging("args[.$i.]->value = ".$args[$i]->value);
                 
                 $i++;
 
@@ -223,8 +219,8 @@ class qtype_programmedresp extends question_type {
                             print_error('errorcantfindvar', 'qtype_programmedresp', $arg->value);
                         }
                     }
-                    debugging("concatvalues".print_r($concatvalues));
-                    debugging("concatvar_readablename = ".$concreadablename);
+                    //debugging("concatvalues".print_r($concatvalues));
+                    //debugging("concatvar_readablename = ".$concreadablename);
                     
                     // Inserting/Updating the new concat var
                     $concatvarname = 'concatvar_' . $concatnum;

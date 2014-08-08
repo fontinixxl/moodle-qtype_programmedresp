@@ -114,7 +114,7 @@ function programmedresp_get_concat_vars($args = false) {
                             if($cancatname = optional_param('n'.$varname, false, PARAM_ALPHANUM)){
                                 $concatvars[$varname] = $cancatname;
                             }else{
-                                echo ("no funciona la recepcio del nom de la variable concatenada");
+                                //echo ("no funciona la recepcio del nom de la variable concatenada");
                             }
 				//$concatvars[$varname] = $varname;
 			}

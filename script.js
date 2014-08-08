@@ -66,9 +66,10 @@ function display_vars(element, edit, displayfunctionbutton) {
     varsheader.style.display = "block";
 
     var fheader = document.getElementById("id_functionheader")
-    fheader.style.visibility = "visible";
-    fheader.style.display = "block";
-
+    if(fheader){    //programmed resp edit
+        fheader.style.visibility = "visible";
+        fheader.style.display = "block";
+    }
     var questiontextvalue = get_questiontext();		//es queda unicament amb el nom de les variables
 
     if (!questiontextvalue) {

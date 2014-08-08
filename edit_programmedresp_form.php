@@ -46,10 +46,9 @@ class qtype_programmedresp_edit_form extends question_edit_form {
 
         $caneditfunctions = has_capability('moodle/question:config', context_system::instance());
 
-
         // To lower than 1.9.9
         $PAGE->requires->js('/question/type/programmedresp/script.js');
-        echo '<link rel="stylesheet" type="text/css" href="'.$CFG->wwwroot.'/question/type/programmedresp/styles.css" />';
+        
         // Adding wwwroot
         echo "<script type=\"text/javascript\">//<![CDATA[\n" .
         "this.wwwroot = '" . $CFG->wwwroot . "';\n" .
@@ -184,11 +183,9 @@ class qtype_programmedresp_edit_form extends question_edit_form {
             // Variables
             $varfields = programmedresp_get_var_fields();
             if ($this->programmedresp_vars) {
-                echo '<br>foreach var..';
                 foreach ($this->programmedresp_vars as $var) {
                     foreach ($varfields as $varfield => $fielddesc) {
                         $fieldname = 'var_' . $varfield . '_' . $var->varname;
-                        echo($fieldname . '<br>');
                         $question->{$fieldname} = $var->{$varfield};
                     }
                 }
