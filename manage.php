@@ -30,7 +30,6 @@ $PAGE->set_cacheable(true);
 echo $OUTPUT->header();
 
 
-
 switch ($action) {
 
     case 'addcategory':

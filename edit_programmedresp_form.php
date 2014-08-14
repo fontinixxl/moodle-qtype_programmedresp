@@ -20,7 +20,7 @@
  *
  * @package    qtype
  * @subpackage programmedresp
- * @copyright  THEYEAR Gerard Cuello (<gerard.urv@gmail.com>)
+ * @copyright  2014 Gerard Cuello (<gerard.urv@gmail.com>)
 
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -32,8 +32,7 @@ require_once($CFG->dirroot . '/question/type/programmedresp/programmedresp_outpu
 /**
  * programmedresp question editing form definition.
  *
- * @copyright  2013 Gerard Cuello (gerard.urv@estudiants.urv.cat)
-
+ * @copyright  2014 Gerard Cuello (gerard.urv@estudiants.urv.cat)
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class qtype_programmedresp_edit_form extends question_edit_form {
@@ -41,7 +40,6 @@ class qtype_programmedresp_edit_form extends question_edit_form {
     protected function definition_inner($mform) {
         global $CFG, $DB, $PAGE;
 
-        //GERARD
         $id = required_param('cmid', PARAM_INT);
 
         $caneditfunctions = has_capability('moodle/question:config', context_system::instance());
@@ -124,7 +122,7 @@ class qtype_programmedresp_edit_form extends question_edit_form {
 
         // Link to add a category
         if ($caneditfunctions) {
-            $addcategoryurl = $CFG->wwwroot . '/question/type/programmedresp/manage.php?action=addcategory&id=' . $id;
+            $addcategoryurl = $CFG->wwwroot . '/question/type/programmedresp/manage.php?action=addcategory';
             $onclick = "window.open(this.href, this.target, 'menubar=0,location=0,scrollbars,resizable,width=500,height=600', true);return false;";
             $categorylink = '<a href="' . $addcategoryurl . '" onclick="' . $onclick . '" target="addcategory">' . get_string('addcategory', 'qtype_programmedresp') . '</a>';
             $mform->addElement('html', '<div class="fitem"><div class="fitemtitle"></div><div class="felement">' . $categorylink . '<br/><br/></div></div>');

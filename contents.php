@@ -11,8 +11,6 @@ require_once('../../../config.php');
 require_once($CFG->dirroot . '/question/type/programmedresp/lib.php');
 require_once($CFG->dirroot . '/question/type/programmedresp/programmedresp_output_ajax.class.php');
 
-//guided_quiz->display_section:
-//param = "action=displayvars" + functionbuttonstr + "&questiontext=" + questiontextvalue
 $action = optional_param('action', false, PARAM_ALPHAEXT);
 if (!$action) {
     die();

@@ -28,6 +28,7 @@ defined('MOODLE_INTERNAL') || die();
 require_once($CFG->dirroot . '/question/type/programmedresp/lib.php');
 //File to store the php functions used to calculate the response
 require_once($CFG->dataroot . '/qtype_programmedresp.php');
+
 programmedresp_check_datarootfile();
 
 /**
@@ -48,6 +49,7 @@ class qtype_programmedresp_question extends question_graded_automatically {
 
     
     public function start_attempt(question_attempt_step $step, $variant) {
+        //unused
     }
 
     /**
@@ -72,7 +74,8 @@ class qtype_programmedresp_question extends question_graded_automatically {
         if (!empty($this->options->vars)) {
             foreach ($this->options->vars as $var) {        //{$x}
                 // If this attempt doesn't have yet a value
-                if (!$values = $DB->get_field('qtype_programmedresp_val', 'varvalues', array('attemptid' => $usageid, 'programmedrespvarid' => $var->id, 'module' => $modname))) {
+                if (!$values = $DB->get_field('qtype_programmedresp_val', 'varvalues', 
+                        array('attemptid' => $usageid, 'programmedrespvarid' => $var->id, 'module' => $modname))) {
                     //Add a new random value
                     $values = $this->generate_value($usageid, $var, $modname);
                     if (is_null($values)) {
@@ -81,10 +84,10 @@ class qtype_programmedresp_question extends question_graded_automatically {
                 }
                 $values = programmedresp_unserialize($values);
                 $valuetodisplay = implode(', ', $values);
-                $this->questiontext = str_replace('{$' . $var->varname . '}', $valuetodisplay, $this->questiontext);
+                $this->questiontext = str_replace('{$'.$var->varname.'}', $valuetodisplay, $this->questiontext);
             }
         }
-        //get the correct answers for this question and save it in class variable
+        //get the correct answers for this question and save it
         $answers = $this->get_correct_responses_without_round($usageid);
         foreach ($answers as $key => $ansvalue) {
             $this->answers[$key]->answer = $ansvalue;
@@ -152,6 +155,7 @@ class qtype_programmedresp_question extends question_graded_automatically {
     }
 
     /**
+     * Improve it!!! if there are more than one response ...
      * Use by many of the behaviours to determine whether the student
      * has provided enough of an answer for the question to be graded automatically,
      * or whether it must be considered aborted.
@@ -201,7 +205,9 @@ class qtype_programmedresp_question extends question_graded_automatically {
         return $fraction;
     }
 
-    //Helper methods
+    /*
+     * Helper methods
+     */
 
     /**
      * Generates a value based on $var attributes and inserts in into DB
@@ -474,7 +480,7 @@ class qtype_programmedresp_question extends question_graded_automatically {
         global $DB;
 
         if (!$questionusage = $DB->get_field('question_attempts', 'questionusageid', array('id' => $attemptid))) {
-            //TODO: SHOW MESSAGE ERROR
+            //TODO : show message error
         }
         return $questionusage;
     }

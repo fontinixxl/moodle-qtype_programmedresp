@@ -19,7 +19,7 @@
  *
  * @package    qtype
  * @subpackage programmedresp
- * @copyright  THEYEAR YOURNAME (YOURCONTACTINFO)
+ * @copyright  2014 Gerard Cuello (<gerard.urv@gmail.com>)
 
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -27,8 +27,6 @@
 defined('MOODLE_INTERNAL') || die();
 
 $plugin->component = 'qtype_programmedresp';
-$plugin->version   = 2013012903;
-
-$plugin->requires  = 2012062504;
-
+$plugin->version   = 2014081400;
+$plugin->requires  = 2014050800;
 $plugin->maturity  = MATURITY_BETA;

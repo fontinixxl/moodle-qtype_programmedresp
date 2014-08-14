@@ -65,7 +65,6 @@ class qtype_programmedresp_renderer extends qtype_renderer {
                 ));
             }
 
-            
             $class = 'r' . ($resp->returnkey % 2);
             if ($options->correctness) {
                 $fraction = $question->is_correct_answer($resp->returnkey, $qa);
@@ -74,7 +73,6 @@ class qtype_programmedresp_renderer extends qtype_renderer {
                 }
                 $feedbackimg[$resp->returnkey] = $this->feedback_image($fraction);
                 $inputattributes['class'] = $this->feedback_class($fraction);
-                //$class .= ' ' . $this->feedback_class($fraction);
             } else {
                 $feedbackimg[$resp->returnkey] = '';
             }

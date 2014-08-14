@@ -1,5 +1,13 @@
 <?php
 
+/**
+ * Manages the moodleform and ajax shared outputs
+ *
+ * @copyright 2010 David Monllaó <david.monllao@urv.cat>
+ * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
+ * @package qtype_programmedresp
+ */
+
 class prgrammedresp_output {
 
     var $mform;
@@ -8,14 +16,9 @@ class prgrammedresp_output {
       $this->mform = $mform;
       }
      
-/*
-    public function __construct($mform) {
-        $this->mform = $mform;
-    }
-*/
+      
     function add_concat_var($name, $vars, $values = false, $return = false, $readablename = false) {
 
-        //$concatdiv = '<strong>' . $name . '</strong><br/>';
         if(!$readablename){
             $readablename = $name;
         }
@@ -105,22 +108,6 @@ class prgrammedresp_output {
         }
 
         // TODO: Add a check_maximum and check_minimum to ensure max > min
-        // The guided quiz should not display the functions button
-        /*
-        if ($displayfunctionbutton) {
-            
-            $attrs['onclick'] = 'return functionsection_visible();';
-
-            // Button text
-            if (empty($args)) {
-                $buttonlabel = get_string("assignfunction", "qtype_programmedresp");
-            } else {
-                $buttonlabel = get_string("refresharguments", "qtype_programmedresp");
-            }
-            $this->print_form_button($buttonlabel, 'function', $attrs);
-        }
-         * 
-         */
     }
 
     /**

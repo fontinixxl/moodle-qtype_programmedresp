@@ -25,7 +25,6 @@ function get_questiontext() {
     }
 
     if (!questiontextvalue) {
-        //alert("No troba id_questiontext");
         return false;
     }
 
@@ -49,7 +48,6 @@ function get_next_concat_num() {
 }
 
 function display_vars(element, edit, displayfunctionbutton) {
-    //alert('display_vars');
     callerelement = element;
 
     if (edit != undefined) {
@@ -141,7 +139,6 @@ function display_args(element) {
         var concatelement = document.getElementById("concatvar_" + i);
         if (concatelement != false) {
             var concatname = document.getElementById("nconcatvar_" + i).value;
-            alert(concatname);
             //recorre tota la llista de variables i les q estan seleccionades les agafa
             for (var elementi = 0; elementi < concatelement.options.length; elementi++) {
                 if (concatelement.options[elementi].selected) {
@@ -172,7 +169,6 @@ function display_section(params) {
     } else {
         var contentdiv = document.getElementById(callerelement.id + "_content");
     }
-    //alert(callerelement.id + "_content");
     contentdiv.innerHTML = "";
 
     // TODO: Posar-li un loading.gif
@@ -189,8 +185,6 @@ function display_section(params) {
     YUI().use('yui2-connection', function(Y) {
         Y.YUI2.util.Connect.asyncRequest('POST', dir, callbackHandler, params);
     });
-
-    //alert(callbackResult);
 
     return callbackResult;
 }
@@ -210,14 +204,6 @@ function process_display_section(transaction) {
 
     // The editing param will only be true when calling display_vars on edition
     if (editing != false) {
-
-        /*if (opened == true) {
-         var argscaller = window.opener.document.getElementById("id_programmedrespfid");
-         } else {
-         var argscaller = document.getElementById("id_programmedrespfid");
-         }
-         //display_args(argscaller);
-         */
         editing = false;
     }
 }
@@ -268,7 +254,6 @@ function add_concat_var() {
 
     var params = "action=addconcatvar&concatnum=" + concatnum + varsstring;
 
-    //YAHOO.util.Connect.asyncRequest("POST", wwwroot + "/question/type/programmedresp/contents.php", callbackHandler, params);
     dir = wwwroot + "/question/type/programmedresp/contents.php";
     YUI().use('yui2-connection', function(Y) {
         Y.YUI2.util.Connect.asyncRequest('POST', dir, callbackHandler, params);

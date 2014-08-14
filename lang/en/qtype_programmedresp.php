@@ -74,7 +74,6 @@
     $string['pluginnameediting'] = 'Editing a programmedresp question';
     $string['pluginnamesummary'] = 'A programmedresp question type which allows the embedding of the response fields for various available
     sub questions in the question text.';
-
     $string['questionresultslabels'] = 'Question results labels';
     $string['refresh'] = 'Refresh';
     $string['refresharguments'] = 'Refresh arguments';
