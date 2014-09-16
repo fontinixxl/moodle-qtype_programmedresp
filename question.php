@@ -28,7 +28,6 @@ defined('MOODLE_INTERNAL') || die();
 require_once($CFG->dirroot . '/question/type/programmedresp/lib.php');
 //File to store the php functions used to calculate the response
 require_once($CFG->dataroot . '/qtype_programmedresp.php');
-
 programmedresp_check_datarootfile();
 
 /**
@@ -254,16 +253,17 @@ class qtype_programmedresp_question extends question_graded_automatically {
         $vars = $DB->get_records('qtype_programmedresp_var', array('programmedrespid' => $programmedresp->id));
 
         // Executes the function and stores the result/s in $results var
-        $exec = '$results = ' . $function->name . '(';
+        
         $modname = programmedresp_get_modname();
         $quizid = programmedresp_get_quizid($attemptid, $modname);
-
+        
+        $exec = '$results = ' . $function->name . '(';
         foreach ($args as $arg) {
             $execargs[] = $this->get_exec_arg($arg, $vars, $attemptid, $quizid);
         }
         $exec.= implode(', ', $execargs);
         $exec.= ');';
-
+        debugging("funcio ".$exec);
         // Remove the output generated
         $exec = 'ob_start();' . $exec . 'ob_end_clean();';
         eval($exec);
