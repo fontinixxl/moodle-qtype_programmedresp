@@ -48,6 +48,7 @@ class qtype_programmedresp_question extends question_graded_automatically {
 
     
     public function start_attempt(question_attempt_step $step, $variant) {
+        //unused
     }
 
     /**
@@ -72,7 +73,8 @@ class qtype_programmedresp_question extends question_graded_automatically {
         if (!empty($this->options->vars)) {
             foreach ($this->options->vars as $var) {        //{$x}
                 // If this attempt doesn't have yet a value
-                if (!$values = $DB->get_field('qtype_programmedresp_val', 'varvalues', array('attemptid' => $usageid, 'programmedrespvarid' => $var->id, 'module' => $modname))) {
+                if (!$values = $DB->get_field('qtype_programmedresp_val', 'varvalues', 
+                        array('attemptid' => $usageid, 'programmedrespvarid' => $var->id, 'module' => $modname))) {
                     //Add a new random value
                     $values = $this->generate_value($usageid, $var, $modname);
                     if (is_null($values)) {
@@ -81,10 +83,10 @@ class qtype_programmedresp_question extends question_graded_automatically {
                 }
                 $values = programmedresp_unserialize($values);
                 $valuetodisplay = implode(', ', $values);
-                $this->questiontext = str_replace('{$' . $var->varname . '}', $valuetodisplay, $this->questiontext);
+                $this->questiontext = str_replace('{$'.$var->varname.'}', $valuetodisplay, $this->questiontext);
             }
         }
-        //get the correct answers for this question and save it in class variable
+        //get the correct answers for this question and save it
         $answers = $this->get_correct_responses_without_round($usageid);
         foreach ($answers as $key => $ansvalue) {
             $this->answers[$key]->answer = $ansvalue;
@@ -152,6 +154,7 @@ class qtype_programmedresp_question extends question_graded_automatically {
     }
 
     /**
+     * Improve it!!! if there are more than one response ...
      * Use by many of the behaviours to determine whether the student
      * has provided enough of an answer for the question to be graded automatically,
      * or whether it must be considered aborted.
@@ -201,7 +204,9 @@ class qtype_programmedresp_question extends question_graded_automatically {
         return $fraction;
     }
 
-    //Helper methods
+    /*
+     * Helper methods
+     */
 
     /**
      * Generates a value based on $var attributes and inserts in into DB
@@ -248,16 +253,17 @@ class qtype_programmedresp_question extends question_graded_automatically {
         $vars = $DB->get_records('qtype_programmedresp_var', array('programmedrespid' => $programmedresp->id));
 
         // Executes the function and stores the result/s in $results var
-        $exec = '$results = ' . $function->name . '(';
+        
         $modname = programmedresp_get_modname();
         $quizid = programmedresp_get_quizid($attemptid, $modname);
-
+        
+        $exec = '$results = ' . $function->name . '(';
         foreach ($args as $arg) {
             $execargs[] = $this->get_exec_arg($arg, $vars, $attemptid, $quizid);
         }
         $exec.= implode(', ', $execargs);
         $exec.= ');';
-
+        debugging("funcio ".$exec);
         // Remove the output generated
         $exec = 'ob_start();' . $exec . 'ob_end_clean();';
         eval($exec);
@@ -465,7 +471,7 @@ class qtype_programmedresp_question extends question_graded_automatically {
         global $DB;
 
         if (!$attempid = $DB->get_field('question_attempt_steps', 'questionattemptid', array('id' => $stepid))) {
-            echo "<br>upss.... get_attemptid_by_stepid()";
+            //TODO : show message error
         }
         return $attempid;
     }
@@ -474,7 +480,7 @@ class qtype_programmedresp_question extends question_graded_automatically {
         global $DB;
 
         if (!$questionusage = $DB->get_field('question_attempts', 'questionusageid', array('id' => $attemptid))) {
-            echo "<br>upss.... get_question_usageid()";
+            //TODO : show message error
         }
         return $questionusage;
     }

@@ -1,3 +1,7 @@
+#page-question-type-programmedresp input[type=text]{
+    height:auto;
+}
+
 .que.programmedresp .answer .specificfeedback {
     display: inline;
     padding: 0 0.7em;
@@ -17,7 +21,7 @@
 }
 .que.programmedresp .answer div.r0 bel,
 .que.programmedresp .answer div.r1 bel {
-    width: 9%;
+    width: 12%;
     display: inline-block;
     text-indent: initial;
 }
@@ -34,11 +38,12 @@
 }
 
 /*EDITING QUESTION*/
-.programmedresp_functiondescription {
+.programmedresp_functiondescription { 
     border-style: solid;
+    border-color: #0070A8;
     width: 650px;
-    margin: 30px auto 30px auto;
-    padding: 3px;
+    margin: 0px auto 30px auto;
+    padding: 5px;
 }
 
 #id_responseslabels {
@@ -53,4 +58,6 @@
 
 .programmedresp_novars {
     padding: 10px;
+    
 }
+

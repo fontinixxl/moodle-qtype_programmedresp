@@ -28,7 +28,7 @@ class programmedresp_output_ajax extends prgrammedresp_output {
      * @param string $elementname
      * @param string $attrs
      */
-   /* function print_form_button($title, $elementname, $attrs) {
+   function print_form_button($title, $elementname, $attrs) {
         
         echo '<div class="fitem"><div class="fitemtitle"></div>';
         echo '<div class="felement fbutton"><input name="'.$elementname.'" value="'.$title.'" type="button" id="id_'.$elementname.'" ';
@@ -40,7 +40,7 @@ class programmedresp_output_ajax extends prgrammedresp_output {
         echo '/>';
         echo '</div></div>';
     }
-    */
+    
     /**
      * Prints an input text
      * 

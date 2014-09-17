@@ -16,11 +16,9 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Serve question type files
+ * Constant vars and common functions for the programmed responses question type
  *
- * @since      2.0
- * @package    qtype_programmedresp
- * @copyright  2010  (Gerard Cuello <gerard.urv@gmail.com>)
+ * @copyright 2010 David Monllaó <david.monllao@urv.cat>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 defined('MOODLE_INTERNAL') || die();
@@ -90,33 +88,38 @@ function programmedresp_get_question_vars($questiontext = false) {
  */
 function programmedresp_get_concat_vars($args = false) {
 
-	$concatvars = array();
+    $concatvars = array();
 
-	// If there are args filter by CONCAT type
-	if ($args) {
-		foreach ($args as $arg) {
+    // If there are args filter by CONCAT type
+    if ($args) {
+        foreach ($args as $arg) {
 
-			if (PROGRAMMEDRESP_ARG_CONCAT == $arg->type) {
-				$concatdata = programmedresp_get_concatvar_data($arg->value);
-				$concatvars[$concatdata->name] = $concatdata->name;
-			}
-		}
+            if (PROGRAMMEDRESP_ARG_CONCAT == $arg->type) {
+                $concatdata = programmedresp_get_concatvar_data($arg->value);
+                $concatvars[$concatdata->name] = $concatdata->readablename;
+            }
+        }
 
-    // If there aren't args search on _GET
-	} else {
+        // If there aren't args search on _GET
+    } else {
 
-		// TODO: Change this silly iteration
-		// I hope 50 will be ok...
-		for ($concatnum = 0; $concatnum < 50; $concatnum++) {
+        // TODO: Change this silly iteration
+        // I hope 50 will be ok...
+        for ($concatnum = 0; $concatnum < 50; $concatnum++) {
 
-			$varname = 'concatvar_'.$concatnum;
-			if ($concat = optional_param($varname, false, PARAM_ALPHANUM)) {
-				$concatvars[$varname] = $varname;
-			}
-		}
-	}
+            $varname = 'concatvar_' . $concatnum;
+            if ($concat = optional_param($varname, false, PARAM_ALPHANUM)) {
+                if ($cancatname = optional_param('n' . $varname, false, PARAM_ALPHANUM)) {
+                    $concatvars[$varname] = $cancatname;
+                } else {
+                    //echo ("no funciona la recepcio del nom de la variable concatenada");
+                }
+                //$concatvars[$varname] = $varname;
+            }
+        }
+    }
 
-	return $concatvars;
+    return $concatvars;
 }
 
 /**
@@ -125,19 +128,18 @@ function programmedresp_get_concat_vars($args = false) {
  * @return The concat var data: name, referenced vars...
  */
 function programmedresp_get_concatvar_data($id) {
-        global $DB;
-	$data = $DB->get_record('qtype_programmedresp_conc', array('id' => $id));
-	if (!$data) {
-		print_error('errornoconcatvar', 'qtype_programmedresp');
-	}
+    global $DB;
+    $data = $DB->get_record('qtype_programmedresp_conc', array('id' => $id));
+    if (!$data) {
+        print_error('errornoconcatvar', 'qtype_programmedresp');
+    }
 
-	// "values" is a reserved DB field
-	$data->values = programmedresp_unserialize($data->vars);
-	unset($data->vars); // Just in case
+    // "values" is a reserved DB field
+    $data->values = programmedresp_unserialize($data->vars);
+    unset($data->vars); // Just in case
 
-	return $data;
+    return $data;
 }
-
 
 /**
  * Gets the different attributes of the question text vars
@@ -157,7 +159,7 @@ function programmedresp_get_var_fields() {
  */
 function programmedresp_get_argtypes_mapping() {
 
-	return array(PROGRAMMEDRESP_ARG_FIXED => 'fixed',
+    return array(PROGRAMMEDRESP_ARG_FIXED => 'fixed',
         PROGRAMMEDRESP_ARG_VARIABLE => 'variable',
         PROGRAMMEDRESP_ARG_CONCAT => 'concat',
         PROGRAMMEDRESP_ARG_EXTENDEDQUIZ => 'extendedquiz');
@@ -171,29 +173,29 @@ function programmedresp_get_argtypes_mapping() {
  */
 function programmedresp_add_repository_function($functioncode) {
 
-	global $CFG;
+    global $CFG;
 
-	// TODO: Interoperability
-	$linebreak = "\n";
+    // TODO: Interoperability
+    $linebreak = "\n";
 
-        $file = $CFG->dataroot.'/qtype_programmedresp.php';
+    $file = $CFG->dataroot . '/qtype_programmedresp.php';
 
-	programmedresp_check_datarootfile();
+    programmedresp_check_datarootfile();
 
-	$cleanfunctioncode = str_replace(chr(13), '', $functioncode);
-	$cleanfunctioncode = str_replace(chr(10), '', $cleanfunctioncode);
-	$cleanfunctioncode = str_replace('\r', '', $cleanfunctioncode);
-	$cleanfunctioncode = str_replace('\n', '', $cleanfunctioncode);
-        $cleanfunctioncode = str_replace('    ', ' ', $cleanfunctioncode);
-        $cleanfunctioncode = str_replace('    ', ' ', $cleanfunctioncode);
+    $cleanfunctioncode = str_replace(chr(13), '', $functioncode);
+    $cleanfunctioncode = str_replace(chr(10), '', $cleanfunctioncode);
+    $cleanfunctioncode = str_replace('\r', '', $cleanfunctioncode);
+    $cleanfunctioncode = str_replace('\n', '', $cleanfunctioncode);
+    $cleanfunctioncode = str_replace('    ', ' ', $cleanfunctioncode);
+    $cleanfunctioncode = str_replace('    ', ' ', $cleanfunctioncode);
 
-	$fh = fopen($file, 'a+');
+    $fh = fopen($file, 'a+');
 
-	fwrite($fh, $linebreak);
-	fwrite($fh, $cleanfunctioncode);
-	fwrite($fh, $linebreak);
+    fwrite($fh, $linebreak);
+    fwrite($fh, $cleanfunctioncode);
+    fwrite($fh, $linebreak);
 
-	fclose($fh);
+    fclose($fh);
 }
 
 /**
@@ -202,7 +204,7 @@ function programmedresp_add_repository_function($functioncode) {
  * @param unknown_type $catoptions
  * @param unknown_type $categories
  * @param unknown_type $nspaces
-*/
+ */
 function programmedresp_add_child_categories($parentid, &$catoptions, $categories, $nspaces = 2) {
 
     foreach ($categories as $key => $cat) {
@@ -214,7 +216,7 @@ function programmedresp_add_child_categories($parentid, &$catoptions, $categorie
                 $spaces.= '&nbsp;';
                 $i++;
             }
-            $catoptions[$cat->id] = $spaces.$cat->name;
+            $catoptions[$cat->id] = $spaces . $cat->name;
             unset($categories[$key]);
             programmedresp_add_child_categories($cat->id, $catoptions, $categories, $nspaces + 2);
         }
@@ -231,24 +233,24 @@ function programmedresp_get_function_code($functionname) {
     global $CFG;
     programmedresp_check_datarootfile();
     // Getting all the file
-    if (!$filecode = file_get_contents($CFG->dataroot.'/qtype_programmedresp.php')) {
-    	print_error('errorcantaccessfile', 'qtype_programmedresp');
+    if (!$filecode = file_get_contents($CFG->dataroot . '/qtype_programmedresp.php')) {
+        print_error('errorcantaccessfile', 'qtype_programmedresp');
     }
 
     // Cleaning the code
     $filecode = str_replace('<?php', '', $filecode);
     while (strstr($filecode, '  ') != false) {
-    	$filecode = str_replace('  ', ' ', $filecode);
+        $filecode = str_replace('  ', ' ', $filecode);
     }
 
     // The function file line must begin with this
-    $searchedstring = 'function '.$functionname.' (';
+    $searchedstring = 'function ' . $functionname . ' (';
 
     $parts = explode($searchedstring, $filecode);
 
     // Function doesn't exists
     if (count($parts) < 2) {
-    	return false;
+        return false;
     }
 
     // Look for the function end
@@ -257,11 +259,11 @@ function programmedresp_get_function_code($functionname) {
 
     // The lats function
     if (count($partend) < 2) {
-        $code = $searchedstring.' '.$parts[1];
+        $code = $searchedstring . ' ' . $parts[1];
 
-    // Any function other than the last one
+        // Any function other than the last one
     } else {
-        $code = $searchedstring.' '.$partend[0];
+        $code = $searchedstring . ' ' . $partend[0];
     }
 
     if (empty($code)) {
@@ -273,64 +275,40 @@ function programmedresp_get_function_code($functionname) {
 
 function programmedresp_serialize($var) {
 
-	// Single value
-	if (!is_object($var) && !is_array($var)) {
-		return serialize(str_replace('"', '\"', $var));
-	}
+    // Single value
+    if (!is_object($var) && !is_array($var)) {
+        return serialize(str_replace('"', '\"', $var));
+    }
 
-	if (is_object($var)) {
-		foreach ($var as $attr => $value) {
-			$var->$attr = str_replace('"', '\"', $value);
-		}
-	}
+    if (is_object($var)) {
+        foreach ($var as $attr => $value) {
+            $var->$attr = str_replace('"', '\"', $value);
+        }
+    }
 
-	if (is_array($var)) {
-		foreach ($var as $key => $value) {
-			if (!is_object($value)) {
-			    $var[$key] = str_replace('"', '\"', $value);
-			} else {
-				foreach ($value as $attr => $attrvalue) {
-					$var[$key]->$attr = str_replace('"', '\"', $attrvalue);
-				}
-			}
-		}
-	}
+    if (is_array($var)) {
+        foreach ($var as $key => $value) {
+            if (!is_object($value)) {
+                $var[$key] = str_replace('"', '\"', $value);
+            } else {
+                foreach ($value as $attr => $attrvalue) {
+                    $var[$key]->$attr = str_replace('"', '\"', $attrvalue);
+                }
+            }
+        }
+    }
 
-	$var = serialize($var);
+    $var = serialize($var);
 
-	return $var;
+    return $var;
 }
-
 
 function programmedresp_unserialize($var) {
 
     $var = str_replace('\"', '"', $var);
-	$var = unserialize($var);
-
-//	if (!is_object($var) && !is_array($var)) {
-//		return str_replace('\"', '"', $var);
-//	}
-//
-//
-//    if (is_object($var)) {
-//        foreach ($var as $attr => $value) {
-//            $var->$attr = str_replace('\"', '"', $value);
-//        }
-//    }
-//
-//    if (is_array($var)) {
-//        foreach ($var as $key => $value) {
-//        	if (!is_object($value)) {
-//                $var[$key] = str_replace('\"', '"', $value);
-//        	} else {
-//        		foreach ($value as $attr => $attrvalue) {
-//        			$var[$key]->$attr = str_replace('\"', '"', $attrvalue);
-//        		}
-//        	}
-//        }
-//    }
-
-	return $var;
+    $var = unserialize($var);
+    
+    return $var;
 }
 
 /**
@@ -344,10 +322,10 @@ function programmedresp_get_random_value($vardata) {
     $values = array();
     for ($i = 0; $i < $vardata->nvalues; $i++) {
 
-    	if ($vardata->valueincrement == 0) {
-    		$values[] = $vardata->minimum;
-    		continue;
-    	}
+        if ($vardata->valueincrement == 0) {
+            $values[] = $vardata->minimum;
+            continue;
+        }
 
         $differentincrements = round(($vardata->maximum - $vardata->minimum) / $vardata->valueincrement);
         $values[] = $vardata->minimum + (rand(0, $differentincrements) * $vardata->valueincrement);
@@ -360,12 +338,11 @@ function programmedresp_get_random_value($vardata) {
  * It checks that the functions file exists
  */
 function programmedresp_check_datarootfile() {
-    
+
     global $CFG;
 
-    $file = $CFG->dataroot.'/qtype_programmedresp.php';
+    $file = $CFG->dataroot . '/qtype_programmedresp.php';
     //echo ("file = ".$file);
-
     // Creating a new file
     if (!file_exists($file)) {
         if (!$fh = fopen($file, 'w')) {
@@ -376,11 +353,10 @@ function programmedresp_check_datarootfile() {
         fclose($fh);
     }
 
-    if(!is_writable($file)) {
+    if (!is_writable($file)) {
         print_error('errornowritable', 'qtype_programmedresp');
     }
 }
-
 
 function programmedresp_check_base_functions_category() {
 
@@ -408,24 +384,12 @@ function programmedresp_check_base_functions_category() {
  */
 function programmedresp_get_modname() {
 
-	//global $CFG;
-
-//    $withoutmod = substr(str_replace($CFG->dirroot, '', $_SERVER['SCRIPT_FILENAME']), 5);       // The 5 is the /mod/
-//    $modname = substr($withoutmod, 0, strpos($withoutmod, '/'));
-//
-//    return $modname;
-        
-	if (strstr($_SERVER['SCRIPT_FILENAME'], 'extendedquiz') != false) {
-            
-		return 'extendedquiz';
-                
-	} else {
-            
-		return 'quiz';
-                
-	}
+    if (strstr($_SERVER['SCRIPT_FILENAME'], 'extendedquiz') != false) {
+        return 'extendedquiz';
+    } else {
+        return 'quiz';
+    }
 }
-
 
 /**
  * Returns the quiz
@@ -435,9 +399,8 @@ function programmedresp_get_modname() {
  */
 function programmedresp_get_quizid($attemptid, $modname) {
     global $DB;
-	return $DB->get_field($modname.'_attempts', 'quiz', array('uniqueid' => $attemptid));
+    return $DB->get_field($modname . '_attempts', 'quiz', array('uniqueid' => $attemptid));
 }
-
 
 /**
  * Taking into account the dots
@@ -446,9 +409,9 @@ function programmedresp_get_quizid($attemptid, $modname) {
  */
 function programmedresp_is_numeric($response) {
 
-	if (!preg_match('/^-?[0-9]$/', $response) && !preg_match('/^-?[0-9]+\.[0-9]+$/', $response)) {
+    if (!preg_match('/^-?[0-9]$/', $response) && !preg_match('/^-?[0-9]+\.[0-9]+$/', $response)) {
         return false;
-	}
+    }
 
     return true;
 }
@@ -467,4 +430,3 @@ function programmedresp_round($result, $tolerance) {
 
     return $result;
 }
-

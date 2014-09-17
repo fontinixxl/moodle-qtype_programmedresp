@@ -1,18 +1,46 @@
 <?php
 
+// This file is part of Moodle - http://moodle.org/
+//
+// Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+
+
+/**
+ * Question type class for the programmedresp question type.
+ *
+ * @package    qtype
+ * @subpackage programmedresp
+ * @copyright  2014 Gerard Cuello <gerard.urv@gmail.com>
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+
 defined('MOODLE_INTERNAL') || die();
 
 require_once($CFG->libdir . '/questionlib.php');
 
 class qtype_programmedresp extends question_type {
 
+    /*
+     * 
     public $programmedrespfields = array('programmedrespfid', 'tolerancetype', 'tolerance');
     public $exportvarfields = array('varname', 'nvalues', 'maximum', 'minimum', 'valueincrement');
     public $exportconcatvarfields = array('origin', 'name', 'vars');
     public $exportargfields = array('argkey', 'type', 'value');
     public $exportrespfields = array('returnkey', 'label');
     public $exportfunctionfields = array('programmedrespfcatid', 'name', 'description', 'nreturns', 'params', 'results');
-
+     * 
+     */
     public function name() {
         return 'programmedresp';
     }
@@ -54,29 +82,21 @@ class qtype_programmedresp extends question_type {
      */
     public function save_question_options($question) {
         global $DB;
-        //print_r($question);
-        debugging('save question options FUNCTION', DEBUG_DEVELOPER);
-
-        // It does't return the inserted/updated qtype_programmedresp->id
+        
         parent::save_question_options($question);
 
-
         $programmedresp = $DB->get_record('qtype_programmedresp', array('question' => $question->id));
-
         // If we are updating, they will be reinserted
         $DB->delete_records('qtype_programmedresp_resp', array('programmedrespid' => $programmedresp->id));
-
         if (empty($question->vars) || empty($question->args)) {
             $result = $this->save_question_options_from_form($question, $programmedresp);
         } else {
             //segons crec, aquesta opcio es x quan importem preguntes d'altres cursos 
-            // $result = $this->save_question_options_from_questiondata($question, $programmedresp);
+            //$result = $this->save_question_options_from_questiondata($question, $programmedresp);
         }
-
         // Rollback changes
         if (!$result) {
             $this->delete_question($question->id);
-            //return false;
         }
     }
 
@@ -94,8 +114,6 @@ class qtype_programmedresp extends question_type {
      */
     public function get_question_options($question) {
         global $DB;
-        debugging("QUETIONTYPE:get_question_options");
-
         $question->options->programmedresp = $DB->get_record('qtype_programmedresp', array('question' => $question->id));
         if (!$question->options->programmedresp) {
             return false;
@@ -116,7 +134,6 @@ class qtype_programmedresp extends question_type {
      * @param object $questiondata the question data loaded from the database.=> la de get_question_option()
      */
     protected function initialise_question_instance(question_definition $question, $questiondata) {
-        debugging("initialise_question_instance");
         parent::initialise_question_instance($question, $questiondata);
         $question->resps = $questiondata->options->resps;
         $question->options = $questiondata->options;
@@ -134,10 +151,8 @@ class qtype_programmedresp extends question_type {
      * @param $programmedresp
      */
     function save_question_options_from_form($question, $programmedresp) {
-        debugging('save question options from form FUNCTION', DEBUG_DEVELOPER);
         global $DB;
         $argtypesmapping = programmedresp_get_argtypes_mapping();
-
         $i = 0;
         foreach ($_POST as $varname => $value) {
 
@@ -153,12 +168,11 @@ class qtype_programmedresp extends question_type {
                 $args[$i]->argkey = intval(substr($varname, 8));     // integer
                 $args[$i]->type = intval($value);
 
-
                 // There are a form element for each var type (fixed, variable, concat, guidedquiz)
                 // $argvalue contains the value of the selected element
                 $argvalue = $_POST[$argtypesmapping[intval($value)] . "_" . $args[$i]->argkey];
                 $args[$i]->value = clean_param($argvalue, PARAM_TEXT);  // integer or float if it's fixed or a varname
-
+                
                 $i++;
 
                 // Insert a function response
@@ -216,8 +230,12 @@ class qtype_programmedresp extends question_type {
                     $concatnum = intval(substr($arg->value, 10));
                     if (!$concatvalues = optional_param('concatvar_' . $concatnum, false, PARAM_ALPHANUM)) {
                         print_error('errorcantfindvar', 'qtype_programmedresp', $arg->value);
+                    }else{
+                        if (!$concreadablename = optional_param('nconcatvar_' . $concatnum, false, PARAM_ALPHANUM)) {
+                            print_error('errorcantfindvar', 'qtype_programmedresp', $arg->value);
+                        }
                     }
-
+                    
                     // Inserting/Updating the new concat var
                     $concatvarname = 'concatvar_' . $concatnum;
                     if (!$concatobj = $DB->get_record('qtype_programmedresp_conc', array('origin' => 'question', 'instanceid' => $programmedresp->id, 'name' => $concatvarname))) {
@@ -225,6 +243,7 @@ class qtype_programmedresp extends question_type {
                         $concatobj->origin = 'question';
                         $concatobj->instanceid = $programmedresp->id;
                         $concatobj->name = $concatvarname;
+                        $concatobj->readablename = $concreadablename;
                         $concatobj->vars = programmedresp_serialize($concatvalues);
                         if (!$concatobj->id = $DB->insert_record('qtype_programmedresp_conc', $concatobj)) {
                             print_error('errordb', 'qtype_programmedresp');
@@ -245,18 +264,10 @@ class qtype_programmedresp extends question_type {
                     }
 
                     // Insert
-                    /*
-                     * GERARD:
-                     * Si és ExtendedQuiz no cal tractar-ho, ja que no hi podem fer res.Es guarda i ja està!
-                     */
                 } else {
                     if (!$DB->insert_record('qtype_programmedresp_arg', $arg)) {
                         print_error('errordb', 'qtype_programmedresp');
                     }
-                }
-                echo '<br>arg type:<br>';
-                if ($arg->type == PROGRAMMEDRESP_ARG_EXTENDEDQUIZ) {
-                    echo '<br>variable EXTENDED QUIZ<br>';
                 }
             }
         }
@@ -296,9 +307,7 @@ class qtype_programmedresp extends question_type {
     public function save_question_options_from_questiondata($question, $programmedresp) {
 
         $varmap = array();   // Maintains the varname -> varid relation
-//        if (empty($question->vars) || empty($question->args) || empty($question->resps)) {
-//            return false;
-//        }
+
         // Vars
         // GERARD: totes aquestes es guarden en el save_data() del edit_form
         if (!empty($question->vars)) {

@@ -23,6 +23,7 @@
     $string['cancelconcatvar'] = 'Cancel variable';
     $string['closewindow'] = 'Close window';
     $string['confirmconcatvar'] = 'Confirm variable';
+    $string['concatname'] = 'Concatvar name';
     $string['editingprogrammedresp'] = 'Editing Programmed response';
     $string['editresponselabels'] = 'Edit response labels';
     $string['errorargumentnoassigned'] = 'There is a guided quiz argument without var assigned';
@@ -73,8 +74,8 @@
     $string['pluginnameediting'] = 'Editing a programmedresp question';
     $string['pluginnamesummary'] = 'A programmedresp question type which allows the embedding of the response fields for various available
     sub questions in the question text.';
-
     $string['questionresultslabels'] = 'Question results labels';
+    $string['refresh'] = 'Refresh';
     $string['refresharguments'] = 'Refresh arguments';
     $string['refreshvarsvalues'] = 'Refresh vars values';
     $string['response'] = 'Response';

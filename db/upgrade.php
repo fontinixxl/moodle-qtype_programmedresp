@@ -15,11 +15,11 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Calculated question type upgrade code.
+ * Programmed responses question type upgrade code.
  *
  * @package    qtype
- * @subpackage calculated
- * @copyright  1999 onwards Martin Dougiamas {@link http://moodle.com}
+ * @subpackage programmedresp
+ * @copyright  THEYEAR Gerard Cuello (<gerard.urv@gmail.com>)
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -28,7 +28,7 @@ defined('MOODLE_INTERNAL') || die();
 
 
 /**
- * Upgrade code for the calculated question type.
+ * Upgrade code for the programmedresp question type.
  * @param int $oldversion the version we are upgrading from.
  */
 function xmldb_qtype_programmedresp_upgrade($oldversion) {
