@@ -20,23 +20,23 @@ for example to return confidence intervals.
 * Users with Javascript/AJAX support enabled
 
 ## USAGE
-### 1st step (optional):
+#### 1st step (optional):
 Variables can be added to the question text following the
 next format: {$varname} The variables names only accepts alphanumeric characters.
 
-### 2nd step (optional, depends on the first step):
+#### 2nd step (optional, depends on the first step):
 Each variable must define the maximum and minimum
 values it can take, the increment and the number of values, to allow vectorial variables.
 
-### 3rd step (optional):
+#### 3rd step (optional):
 Add concat variables, useful if there should be a vectorial variable which
 values follows different criteria. Now you can change the name of the concat vars!!
 
-### 4th step:
+#### 4th step:
 Select the function which will calculate the answer (read ADDING FUNCTIONS to know
 how to add functions)
 
-### 5th step:
+#### 5th step:
 Assign each of the function arguments to one of the following supported types:
 * variable (1st step).
 * concat variable (3rd step).
@@ -48,7 +48,7 @@ There is an interface to allow the addition of functions; preceding the php impl
 there should be a comment block following phpdoc format, to specify the arguments description and the returned values
 
 Function example:
-
+```PHP
 /**
  * I'm the description block of this function
  *
@@ -64,7 +64,7 @@ function average($values) {
 
     return ($sum / count($values));
 }
-
+```
 The '1' after the 'float' on the @return phpdoc tag indicates that the function returns a scalar
 value. If the function returns an array the return phpdoc tag should follow this
 format "@return array Description1|Description2" using the "|" character as separator
