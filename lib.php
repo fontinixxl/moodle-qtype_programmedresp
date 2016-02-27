@@ -31,7 +31,7 @@ define('PROGRAMMEDRESP_RESPONSEFORMAT_SIGNIFICATIVE', 2);
 
 define('PROGRAMMEDRESP_ARG_FIXED', 0);
 define('PROGRAMMEDRESP_ARG_VARIABLE', 1);
-define('PROGRAMMEDRESP_ARG_EXTENDEDQUIZ', 2);
+define('PROGRAMMEDRESP_ARG_LINKER', 2);
 define('PROGRAMMEDRESP_ARG_CONCAT', 3);
 
 /**
@@ -162,7 +162,7 @@ function programmedresp_get_argtypes_mapping() {
     return array(PROGRAMMEDRESP_ARG_FIXED => 'fixed',
         PROGRAMMEDRESP_ARG_VARIABLE => 'variable',
         PROGRAMMEDRESP_ARG_CONCAT => 'concat',
-        PROGRAMMEDRESP_ARG_EXTENDEDQUIZ => 'extendedquiz');
+        PROGRAMMEDRESP_ARG_LINKER => 'linker');
 }
 
 /**

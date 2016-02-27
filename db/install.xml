@@ -1,17 +1,16 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<XMLDB PATH="question/type/programmedresp/db" VERSION="20111020" COMMENT="XMLDB file for Moodle question/type/programmedresp"
+<XMLDB PATH="question/type/programmedresp/db" VERSION="20160120" COMMENT="XMLDB file for Moodle question/type/programmedresp"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xsi:noNamespaceSchemaLocation="../../../../lib/xmldb/xmldb.xsd"
 >
     <TABLES>
-        <TABLE NAME="qtype_programmedresp" COMMENT="Programmed response main table" NEXT="qtype_programmedresp_resp">
+        <TABLE NAME="qtype_programmedresp" COMMENT="Programmed response main table">
             <FIELDS>
-                <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" ENUM="false" NEXT="question"/>
-                <FIELD NAME="question" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" ENUM="false" PREVIOUS="id" NEXT="programmedrespfid"/>
-                <FIELD NAME="programmedrespfid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="false" SEQUENCE="false" ENUM="false" PREVIOUS="question" NEXT="tolerancetype"/>
-                <FIELD NAME="tolerancetype" TYPE="int" LENGTH="1" NOTNULL="true" UNSIGNED="true" DEFAULT="1" SEQUENCE="false" ENUM="false" PREVIOUS="programmedrespfid" NEXT="tolerance"/>
-                <FIELD NAME="tolerance" TYPE="char" LENGTH="30" NOTNULL="false" DEFAULT="0" SEQUENCE="false" ENUM="false" PREVIOUS="tolerancetype"/>
-
+                <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+                <FIELD NAME="question" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+                <FIELD NAME="programmedrespfid" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false"/>
+                <FIELD NAME="tolerancetype" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="1" SEQUENCE="false"/>
+                <FIELD NAME="tolerance" TYPE="char" LENGTH="30" NOTNULL="false" DEFAULT="0" SEQUENCE="false"/>
             </FIELDS>
             <KEYS>
                 <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
@@ -20,89 +19,61 @@
                 <INDEX NAME="question" UNIQUE="false" FIELDS="question"/>
             </INDEXES>
         </TABLE>
-        <TABLE NAME="qtype_programmedresp_resp" COMMENT="The description of each &quot;programmed response&quot; response" PREVIOUS="qtype_programmedresp" NEXT="qtype_programmedresp_var">
-
+        <TABLE NAME="qtype_programmedresp_var" COMMENT="Store variables from both programmedresp and linkerdescription qtypes.">
             <FIELDS>
-                <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" ENUM="false" NEXT="programmedrespid"/>
-                <FIELD NAME="programmedrespid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" ENUM="false" PREVIOUS="id" NEXT="returnkey"/>
-                <FIELD NAME="returnkey" TYPE="int" LENGTH="1" NOTNULL="false" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" ENUM="false" PREVIOUS="programmedrespid" NEXT="label"/>
-                <FIELD NAME="label" TYPE="char" LENGTH="255" NOTNULL="false" SEQUENCE="false" ENUM="false" PREVIOUS="returnkey" NEXT="answer"/>
-                <FIELD NAME="answer" TYPE="char" LENGTH="255" NOTNULL="false" SEQUENCE="false" ENUM="false" COMMENT="Char type, but supports both string (varname) and float (fixed value)" PREVIOUS="label"/>
+                <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+                <FIELD NAME="question" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+                <FIELD NAME="varname" TYPE="char" LENGTH="100" NOTNULL="true" SEQUENCE="false"/>
+                <FIELD NAME="nvalues" TYPE="int" LENGTH="20" NOTNULL="true" DEFAULT="1" SEQUENCE="false"/>
+                <FIELD NAME="minimum" TYPE="number" LENGTH="20" NOTNULL="true" SEQUENCE="false" DECIMALS="10"/>
+                <FIELD NAME="maximum" TYPE="number" LENGTH="20" NOTNULL="true" SEQUENCE="false" DECIMALS="10"/>
+                <FIELD NAME="valueincrement" TYPE="number" LENGTH="20" NOTNULL="false" DEFAULT="0" SEQUENCE="false" DECIMALS="10"/>
             </FIELDS>
             <KEYS>
                 <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+                <KEY NAME="question" TYPE="foreign" FIELDS="question" REFTABLE="question" REFFIELDS="id"/>
             </KEYS>
-
             <INDEXES>
-                <INDEX NAME="programmedrespid" UNIQUE="false" FIELDS="programmedrespid"/>
+                <INDEX NAME="varname" UNIQUE="false" FIELDS="varname"/>
             </INDEXES>
         </TABLE>
-        <TABLE NAME="qtype_programmedresp_var" COMMENT="A programmed response variable" PREVIOUS="qtype_programmedresp_resp" NEXT="qtype_programmedresp_arg">
+        <TABLE NAME="qtype_programmedresp_val" COMMENT="Store values of vars from both qtypes (programmedresp and linkerdescription)">
             <FIELDS>
-                <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" ENUM="false" NEXT="programmedrespid"/>
-                <FIELD NAME="programmedrespid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" ENUM="false" PREVIOUS="id" NEXT="varname"/>
-                <FIELD NAME="varname" TYPE="char" LENGTH="100" NOTNULL="true" SEQUENCE="false" ENUM="false" PREVIOUS="programmedrespid" NEXT="nvalues"/>
-
-                <FIELD NAME="nvalues" TYPE="int" LENGTH="20" NOTNULL="true" UNSIGNED="false" DEFAULT="1" SEQUENCE="false" ENUM="false" PREVIOUS="varname" NEXT="minimum"/>
-                <FIELD NAME="minimum" TYPE="number" LENGTH="20" NOTNULL="true" UNSIGNED="false" SEQUENCE="false" ENUM="false" DECIMALS="10" PREVIOUS="nvalues" NEXT="maximum"/>
-                <FIELD NAME="maximum" TYPE="number" LENGTH="20" NOTNULL="true" UNSIGNED="false" SEQUENCE="false" ENUM="false" DECIMALS="10" PREVIOUS="minimum" NEXT="valueincrement"/>
-                <FIELD NAME="valueincrement" TYPE="number" LENGTH="20" NOTNULL="false" UNSIGNED="false" DEFAULT="0" SEQUENCE="false" ENUM="false" DECIMALS="10" PREVIOUS="maximum"/>
+                <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+                <FIELD NAME="attemptid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+                <FIELD NAME="varid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="Var id from question_vars"/>
+                <FIELD NAME="varvalues" TYPE="text" NOTNULL="true" SEQUENCE="false"/>
             </FIELDS>
             <KEYS>
                 <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+                <KEY NAME="varid" TYPE="foreign" FIELDS="varid" REFTABLE="programmedresp_var" REFFIELDS="id"/>
             </KEYS>
-            <INDEXES>
-
-                <INDEX NAME="programmedrespid" UNIQUE="false" FIELDS="programmedrespid" NEXT="varname"/>
-                <INDEX NAME="varname" UNIQUE="false" FIELDS="varname" PREVIOUS="programmedrespid"/>
-            </INDEXES>
         </TABLE>
-        <TABLE NAME="qtype_programmedresp_arg" COMMENT="The arguments of the response function, the value field depends on the type content" PREVIOUS="qtype_programmedresp_var" NEXT="qtype_programmedresp_f">
+        <TABLE NAME="qtype_programmedresp_f" COMMENT="Programmed responses functions list">
             <FIELDS>
-                <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" ENUM="false" NEXT="programmedrespid"/>
-                <FIELD NAME="programmedrespid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" ENUM="false" PREVIOUS="id" NEXT="argkey"/>
-                <FIELD NAME="argkey" TYPE="int" LENGTH="1" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" ENUM="false" PREVIOUS="programmedrespid" NEXT="type"/>
-
-                <FIELD NAME="type" TYPE="int" LENGTH="1" NOTNULL="true" UNSIGNED="true" DEFAULT="1" SEQUENCE="false" ENUM="false" PREVIOUS="argkey" NEXT="value"/>
-                <FIELD NAME="value" TYPE="char" LENGTH="255" NOTNULL="false" SEQUENCE="false" ENUM="false" COMMENT="Char type, but supports both string (varname) and float (fixed value)" PREVIOUS="type"/>
+                <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+                <FIELD NAME="programmedrespfcatid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+                <FIELD NAME="name" TYPE="char" LENGTH="100" NOTNULL="true" SEQUENCE="false"/>
+                <FIELD NAME="description" TYPE="text" NOTNULL="false" SEQUENCE="false"/>
+                <FIELD NAME="nreturns" TYPE="int" LENGTH="2" NOTNULL="true" DEFAULT="1" SEQUENCE="false" COMMENT="Number of answer returned by the function"/>
+                <FIELD NAME="params" TYPE="text" NOTNULL="false" SEQUENCE="false"/>
+                <FIELD NAME="results" TYPE="text" NOTNULL="false" SEQUENCE="false"/>
+                <FIELD NAME="timeadded" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
             </FIELDS>
             <KEYS>
                 <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
             </KEYS>
             <INDEXES>
-                <INDEX NAME="programmedrespid_type" UNIQUE="false" FIELDS="programmedrespid, type" NEXT="programmedrespid_argkey"/>
-                <INDEX NAME="programmedrespid_argkey" UNIQUE="false" FIELDS="programmedrespid, argkey" PREVIOUS="programmedrespid_type"/>
-
+                <INDEX NAME="name" UNIQUE="true" FIELDS="name"/>
+                <INDEX NAME="programmedrespfcatid" UNIQUE="false" FIELDS="programmedrespfcatid"/>
             </INDEXES>
         </TABLE>
-        <TABLE NAME="qtype_programmedresp_f" COMMENT="Programmed responses functions list" PREVIOUS="qtype_programmedresp_arg" NEXT="qtype_programmedresp_fcat">
+        <TABLE NAME="qtype_programmedresp_fcat" COMMENT="Categories of functions">
             <FIELDS>
-                <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" ENUM="false" NEXT="programmedrespfcatid"/>
-                <FIELD NAME="programmedrespfcatid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" ENUM="false" PREVIOUS="id" NEXT="name"/>
-                <FIELD NAME="name" TYPE="char" LENGTH="100" NOTNULL="true" SEQUENCE="false" ENUM="false" PREVIOUS="programmedrespfcatid" NEXT="description"/>
-                <FIELD NAME="description" TYPE="text" LENGTH="medium" NOTNULL="false" SEQUENCE="false" ENUM="false" PREVIOUS="name" NEXT="nreturns"/>
-                <FIELD NAME="nreturns" TYPE="int" LENGTH="2" NOTNULL="true" UNSIGNED="true" DEFAULT="1" SEQUENCE="false" ENUM="false" COMMENT="Number of answer returned by the function" PREVIOUS="description" NEXT="params"/>
-
-                <FIELD NAME="params" TYPE="text" LENGTH="medium" NOTNULL="false" SEQUENCE="false" ENUM="false" PREVIOUS="nreturns" NEXT="results"/>
-                <FIELD NAME="results" TYPE="text" LENGTH="medium" NOTNULL="false" SEQUENCE="false" ENUM="false" PREVIOUS="params" NEXT="timeadded"/>
-                <FIELD NAME="timeadded" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" ENUM="false" PREVIOUS="results"/>
+                <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+                <FIELD NAME="parent" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+                <FIELD NAME="name" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false"/>
             </FIELDS>
-            <KEYS>
-                <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
-            </KEYS>
-            <INDEXES>
-                <INDEX NAME="name" UNIQUE="true" FIELDS="name" NEXT="programmedrespfcatid"/>
-
-                <INDEX NAME="programmedrespfcatid" UNIQUE="false" FIELDS="programmedrespfcatid" PREVIOUS="name"/>
-            </INDEXES>
-        </TABLE>
-        <TABLE NAME="qtype_programmedresp_fcat" COMMENT="Categories of functions" PREVIOUS="qtype_programmedresp_f" NEXT="qtype_programmedresp_val">
-            <FIELDS>
-                <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" ENUM="false" NEXT="parent"/>
-                <FIELD NAME="parent" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" ENUM="false" PREVIOUS="id" NEXT="name"/>
-                <FIELD NAME="name" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false" ENUM="false" PREVIOUS="parent"/>
-            </FIELDS>
-
             <KEYS>
                 <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
             </KEYS>
@@ -110,39 +81,51 @@
                 <INDEX NAME="parent" UNIQUE="false" FIELDS="parent"/>
             </INDEXES>
         </TABLE>
-        <TABLE NAME="qtype_programmedresp_val" COMMENT="Values of the programmed responses questions vars" PREVIOUS="qtype_programmedresp_fcat" NEXT="qtype_programmedresp_conc">
+        <TABLE NAME="qtype_programmedresp_arg" COMMENT="The arguments of the response function, the value field depends on the type content">
             <FIELDS>
-
-                <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" ENUM="false" NEXT="attemptid"/>
-                <FIELD NAME="attemptid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" ENUM="false" PREVIOUS="id" NEXT="module"/>
-                <FIELD NAME="module" TYPE="char" LENGTH="20" NOTNULL="true" SEQUENCE="false" ENUM="false" PREVIOUS="attemptid" NEXT="programmedrespvarid"/>
-                <FIELD NAME="programmedrespvarid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" ENUM="false" PREVIOUS="module" NEXT="varvalues"/>
-                <FIELD NAME="varvalues" TYPE="text" LENGTH="medium" NOTNULL="true" SEQUENCE="false" ENUM="false" PREVIOUS="programmedrespvarid"/>
+                <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+                <FIELD NAME="programmedrespid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+                <FIELD NAME="argkey" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+                <FIELD NAME="type" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="1" SEQUENCE="false"/>
+                <FIELD NAME="value" TYPE="char" LENGTH="255" NOTNULL="false" SEQUENCE="false" COMMENT="Char type, but supports both string (varname) and float (fixed value)"/>
             </FIELDS>
             <KEYS>
                 <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
             </KEYS>
-
             <INDEXES>
-                <INDEX NAME="programmedrespvarid" UNIQUE="false" FIELDS="programmedrespvarid"/>
+                <INDEX NAME="programmedrespid_type" UNIQUE="false" FIELDS="programmedrespid, type"/>
+                <INDEX NAME="programmedrespid_argkey" UNIQUE="false" FIELDS="programmedrespid, argkey"/>
             </INDEXES>
         </TABLE>
-        <TABLE NAME="qtype_programmedresp_conc" COMMENT="Concatenated vars" PREVIOUS="qtype_programmedresp_val">
+        <TABLE NAME="qtype_programmedresp_resp" COMMENT="The description of each programmed response">
             <FIELDS>
-                <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" ENUM="false" NEXT="origin"/>
-                <FIELD NAME="origin" TYPE="char" LENGTH="10" NOTNULL="true" DEFAULT="question" SEQUENCE="false" ENUM="true" ENUMVALUES="'question', 'quiz'" PREVIOUS="id" NEXT="instanceid"/>
-                <FIELD NAME="instanceid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" ENUM="false" COMMENT="It references to the programmedresp id or to the guidedquiz id" PREVIOUS="origin" NEXT="name"/>
-                <FIELD NAME="name" TYPE="char" LENGTH="100" NOTNULL="true" SEQUENCE="false" ENUM="false" COMMENT="The concat identifier name" PREVIOUS="instanceid" NEXT="readablename"/>
-                <FIELD NAME="readablename" TYPE="char" LENGTH="100" NOTNULL="true" SEQUENCE="false" ENUM="false" COMMENT="The concat var readable name" PREVIOUS="name" NEXT="vars"/>
-                <FIELD NAME="vars" TYPE="text" LENGTH="small" NOTNULL="false" SEQUENCE="false" ENUM="false" PREVIOUS="name"/>
+                <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+                <FIELD NAME="programmedrespid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+                <FIELD NAME="returnkey" TYPE="int" LENGTH="1" NOTNULL="false" DEFAULT="0" SEQUENCE="false"/>
+                <FIELD NAME="label" TYPE="char" LENGTH="255" NOTNULL="false" SEQUENCE="false"/>
+                <FIELD NAME="answer" TYPE="char" LENGTH="255" NOTNULL="false" SEQUENCE="false" COMMENT="Char type, but supports both string (varname) and float (fixed value)"/>
             </FIELDS>
             <KEYS>
                 <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
             </KEYS>
             <INDEXES>
-                <INDEX NAME="origin_instanceid" UNIQUE="false" FIELDS="origin, instanceid"/>
+                <INDEX NAME="programmedrespid" UNIQUE="false" FIELDS="programmedrespid"/>
             </INDEXES>
-
+        </TABLE>
+        <TABLE NAME="qtype_programmedresp_conc" COMMENT="Concatenated vars">
+            <FIELDS>
+                <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" ENUM="false" />
+                <FIELD NAME="question" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" ENUM="false" COMMENT="It references to the programmedresp id or to the guidedquiz id"/>
+                <FIELD NAME="name" TYPE="char" LENGTH="100" NOTNULL="true" SEQUENCE="false" ENUM="false" COMMENT="The concat identifier name" />
+                <FIELD NAME="readablename" TYPE="char" LENGTH="100" NOTNULL="true" SEQUENCE="false" ENUM="false" COMMENT="The concat var readable name" />
+                <FIELD NAME="vars" TYPE="text" LENGTH="small" NOTNULL="false" SEQUENCE="false" ENUM="false"/>
+            </FIELDS>
+            <KEYS>
+                <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+            </KEYS>
+            <INDEXES>
+                <INDEX NAME="question" UNIQUE="false" FIELDS="question"/>
+            </INDEXES>
         </TABLE>
     </TABLES>
 </XMLDB>

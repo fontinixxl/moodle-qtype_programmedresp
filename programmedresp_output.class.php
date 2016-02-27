@@ -11,9 +11,12 @@
 class prgrammedresp_output {
 
     var $mform;
-
-      function prgrammedresp_output(&$mform){
+    var $linkervars;
+    
+    function prgrammedresp_output(&$mform, $linkervars = ''){
       $this->mform = $mform;
+      // Necessitem passar les variables des del edit_qtype_form ja que per Ajax no podem obtenir-les;
+      $this->linkervars = $linkervars;
       }
      
       
@@ -58,8 +61,8 @@ class prgrammedresp_output {
      * @param array $quizconcatvars The already created guided quiz concat vars
      */
     function display_vars($questiontext = false, $args = false, $displayfunctionbutton = true, $quizconcatvars = false) {
-        
-        // If there aren't vars just notify it
+
+		// If there aren't vars just notify it
         if (!$vars = programmedresp_get_question_vars($questiontext)) {
             $this->print_form_htmlraw('<span class="programmedresp_novars">' . get_string('novars', 'qtype_programmedresp') . '</span>');
         }
@@ -145,16 +148,15 @@ class prgrammedresp_output {
      */
     function display_args($functionid, $questiontext = false, $args = false, $vars = false) {
         global $DB;
-        
+//        print_object($args);
         if (!$functionid) {
             die();
         }
-        
+//        print_object($vars);
         // Function data
         $functiondata = $DB->get_record('qtype_programmedresp_f', array('id' => $functionid));
         $functiondata->params = programmedresp_unserialize($functiondata->params);
         $functiondata->results = programmedresp_unserialize($functiondata->results);
-
         if (!is_array($functiondata->params) || !is_array($functiondata->results)) {
         	$this->print_form_htmlraw('<span class="error">'.get_string('errorparsingfunctiondata', 'qtype_programmedresp').'</span>');
         	return false;
@@ -178,7 +180,7 @@ class prgrammedresp_output {
         $argstitle .= '<br>( '. $displaylink . ' )';
         $this->print_form_title($argstitle);
         foreach ($functiondata->params as $key => $param) {
-
+                
         	// Various param types
         	if (strpos($param->type, '|') != false) {
         		$paramtypes = explode('|', $param->type);
@@ -218,22 +220,26 @@ class prgrammedresp_output {
             $fixedvalue = '';
             $variablevalue = '';
             $concatvalue = '';
+            $linkervalue = '';
             $fixedclass = 'hidden_arg';
             $variableclass = 'hidden_arg';
-            $guidedquizclass = 'hidden_arg';
+            // TODO: Change var name
+            $linkerclass = 'hidden_arg';
             $concatclass = 'hidden_arg';
             
             // If it's a new insertion we show fixed
             if (!$args) {
             	$fixedclass = ''; 
             	
+                // TODO: change to switch case
             } else {
 	            if ($args[$key]->type == PROGRAMMEDRESP_ARG_FIXED) {
 	            	$fixedvalue = $args[$key]->value;
 	            	$fixedclass = '';
 	            	
 	            } else if ($args[$key]->type == PROGRAMMEDRESP_ARG_VARIABLE) {
-	            	$variablevalue = $vars[$args[$key]->value]->varname;
+                        //var_dump($vars['programmed'][$args[$key]->value]->varname);
+	            	$variablevalue = $vars['programmed'][$args[$key]->value]->varname;
 	            	$variableclass = '';
 	            	
 	            } else if ($args[$key]->type == PROGRAMMEDRESP_ARG_CONCAT) {
@@ -241,8 +247,14 @@ class prgrammedresp_output {
 	            	$concatvalue = $concatdata->name;
 	            	$concatclass = '';
 	            	
-	            } else {
-	            	$guidedquizclass = '';
+	            } else if ($args[$key]->type == PROGRAMMEDRESP_ARG_LINKER) {
+                        // Si es pregunta nova desde question bank i no es va assignar variable linker
+                        //  no cumplira aquesta condició
+                        if (!empty($args[$key]->value)) { 
+                            $linkervalue = $vars['linker'][$args[$key]->value]->id;
+                        }
+                        $linkerclass = '';    
+
 	            }
             }
             
@@ -272,11 +284,23 @@ class prgrammedresp_output {
 	            	}
 	            	$paramelement.= '<option value="'.$varname.'" '.$selectedstr.'>'.get_string("var", "qtype_programmedresp").' '.$varvalue.'</option>';
 	            }
-	            $paramelement.= '</select>';
+                    $paramelement.= '</select>';
+                    
+            // Variables linker
+            }
+            if (!empty($this->linkervars)) {
+                    $paramelement.= '<select name="linker_'.$key.'" id="id_argument_linker_'.$key.'" class="'.$linkerclass.'">';
+                    foreach ($this->linkervars as $qid => $linkerq) {
+                        $selectedstr = '';
+                        if ($linkervalue == $linkerq->varname) {
+                            $selectedstr = 'selected="selected"';
+                        }
+                        $paramelement.= '<option value="'.$linkerq->id.'" '.$selectedstr.'>'.$linkerq->varname.'</option>';
+                    }
+                    $paramelement.= '</select>';
             }
             
-            // Guided quiz
-            $paramelement.= '<span  id="id_argument_guidedquiz_'.$key.'" class="'.$guidedquizclass.'"></span><input type="hidden" name="guidedquiz_'.$key.'" value=""/>';
+            $paramelement.= '<span  id="id_argument_linker_'.$key.'" class="'.$linkerclass.'"></span><input type="hidden" name="linker'.$key.'" value=""/>';
             $this->print_form_htmlraw('<div class="felement fselect">'.$paramelement.'</div></div>');
         }
         

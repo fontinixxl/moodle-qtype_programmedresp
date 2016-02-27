@@ -2,6 +2,7 @@
     height:auto;
 }
 
+
 .que.programmedresp .answer .specificfeedback {
     display: inline;
     padding: 0 0.7em;
@@ -51,12 +52,12 @@
     display: none;
 }
 
-.hidden_arg {
+#page-question-type-programmedresp .hidden_arg {
     visibility: hidden;
     display: none;
 }
 
-.programmedresp_novars {
+.que.programmedresp .programmedresp_novars {
     padding: 10px;
     
 }

@@ -10,13 +10,22 @@
 require_once('../../../config.php');
 require_once($CFG->dirroot . '/question/type/programmedresp/lib.php');
 require_once($CFG->dirroot . '/question/type/programmedresp/programmedresp_output_ajax.class.php');
+require_once($CFG->dirroot . '/question/editlib.php');
 
 $action = optional_param('action', false, PARAM_ALPHAEXT);
 if (!$action) {
     die();
 }
+global $DB;
+$quizid = optional_param('quizid', 0, PARAM_INT);
 
-$outputmanager = new programmedresp_output_ajax($mform);
+$linkervars = array();
+if ($quizid) {
+    if ($qinquiz = $DB->get_records('qtype_linkerdescription', array('quiz' => $quizid), null, 'question')) {
+        $linkervars = $DB->get_records_list('qtype_programmedresp_var', 'question', array_keys($qinquiz));
+    }
+}
+$outputmanager = new programmedresp_output_ajax($mform, $linkervars);
 switch ($action) {
 
     // Question text vars

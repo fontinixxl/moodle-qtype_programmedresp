@@ -73,11 +73,11 @@ value. If the function returns an array the return phpdoc tag should follow this
 format "@return array Description1|Description2" using the "|" character as separator
 
 
-EXTENDED QUIZ MODULE LINKAGE
-There is another function argument type, the extended quiz type. The "mod_extendedquiz" moodle plugin 
-is a quiz which allows the addition of variables to the quiz text, following the variables format 
-described above; this argument type allows users to use these extended quiz variables as a function
-argument.
+LINKERDESCRIPTION QUESTION VARIABLE LINKAGE
+There is another function argument type, the linker type. The "qtype_linkerdescription"
+allows the addition of variables to the question text, following the variables format 
+described above; this argument type allows users to use these linker description variables 
+as a function argument.
 
 INSTALL
 Follow the usual installation instructions

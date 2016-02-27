@@ -63,7 +63,7 @@ function display_vars(element, edit, displayfunctionbutton) {
     varsheader.style.visibility = "visible";
     varsheader.style.display = "block";
 
-    var fheader = document.getElementById("id_functionheader")
+    var fheader = document.getElementById("id_functionheader");
     if(fheader){    //programmed resp edit
         fheader.style.visibility = "visible";
         fheader.style.display = "block";
@@ -158,7 +158,7 @@ function display_args(element) {
     questiontextvalue = questiontextvalue.replace(questiontextregexpfilter, " ");
 
     // function id + question text to extract the vars + the concatenated vars created
-    return display_section("action=displayargs&function=" + functionid + "&questiontext=" + questiontextvalue + concatstring);
+    return display_section("action=displayargs&function=" + functionid + "&questiontext=" + questiontextvalue + concatstring + "&quizid=" + quizid);
 }
 
 
@@ -182,6 +182,7 @@ function display_section(params) {
             };
 
     dir = wwwroot + "/question/type/programmedresp/contents.php";
+    console.log(params);
     YUI().use('yui2-connection', function(Y) {
         Y.YUI2.util.Connect.asyncRequest('POST', dir, callbackHandler, params);
     });
@@ -311,13 +312,16 @@ function cancel_concat_var(concatid) {
 
 function change_argument_type(element, argumentkey) {
 
-    var types = new Array('fixed', 'variable', 'guidedquiz', 'concat');
+    var types = new Array('fixed', 'variable', 'linker', 'concat');
     var tmpelement;
 
     for (var i = 0; i < types.length; i++) {
 
         tmpelement = document.getElementById("id_argument_" + types[i] + "_" + argumentkey);
-
+        // if there aren't "variable" elements, we must skip it to avoid javascript errors
+        if (tmpelement === null) {
+            continue;
+        }
         if (element.value == i) {
             tmpelement.style.visibility = "visible";
             tmpelement.style.display = "inline";
