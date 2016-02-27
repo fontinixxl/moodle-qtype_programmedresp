@@ -1,4 +1,4 @@
-# moodle-qtype_programmedresp
+# Moodle qtype_programmedresp
 
 Question type which gets the question answer through a set of editable and non-native PHP functions. Useful
 for maths or statistics exercices which requires complex operations to get the answer.
