@@ -11,13 +11,10 @@
 class prgrammedresp_output {
 
     var $mform;
-    var $linkervars;
     
-    function prgrammedresp_output(&$mform, $linkervars = ''){
+    function prgrammedresp_output(&$mform){
       $this->mform = $mform;
-      // Necessitem passar les variables des del edit_qtype_form ja que per Ajax no podem obtenir-les;
-      $this->linkervars = $linkervars;
-      }
+    }
      
       
     function add_concat_var($name, $vars, $values = false, $return = false, $readablename = false) {
@@ -60,9 +57,9 @@ class prgrammedresp_output {
      * @param boolean $displayfunctionbutton True for programmedresp, false for guidedquiz
      * @param array $quizconcatvars The already created guided quiz concat vars
      */
-    function display_vars($questiontext = false, $args = false, $displayfunctionbutton = true, $quizconcatvars = false) {
-
-		// If there aren't vars just notify it
+    function display_vars($questiontext = false, $args = false, $quizconcatvars = false) {
+        
+        // If there aren't vars just notify it
         if (!$vars = programmedresp_get_question_vars($questiontext)) {
             $this->print_form_htmlraw('<span class="programmedresp_novars">' . get_string('novars', 'qtype_programmedresp') . '</span>');
         }
@@ -97,7 +94,7 @@ class prgrammedresp_output {
                 }
             }
 
-            // Restoring the guided quiz concatenated vars
+            // Restoring the concatenated vars
             if ($quizconcatvars) {
                 foreach ($quizconcatvars as $concatdata) {
                     $concatdata->values = programmedresp_unserialize($concatdata->vars);
@@ -146,76 +143,83 @@ class prgrammedresp_output {
      * @param $args
      * @param $vars
      */
-    function display_args($functionid, $questiontext = false, $args = false, $vars = false) {
+    function display_args($functionid, $questiontext = false, $args = false, $vars = false, $quizid = null) {
         global $DB;
-//        print_object($args);
+        
         if (!$functionid) {
             die();
         }
-//        print_object($vars);
+
+        if (!$quizid) {
+            // Try to get from Ajax call.
+            $quizid = optional_param('quizid', false, PARAM_INT);
+        }
+
         // Function data
         $functiondata = $DB->get_record('qtype_programmedresp_f', array('id' => $functionid));
         $functiondata->params = programmedresp_unserialize($functiondata->params);
         $functiondata->results = programmedresp_unserialize($functiondata->results);
         if (!is_array($functiondata->params) || !is_array($functiondata->results)) {
-        	$this->print_form_htmlraw('<span class="error">'.get_string('errorparsingfunctiondata', 'qtype_programmedresp').'</span>');
-        	return false;
+            $this->print_form_htmlraw('<span class="error">' . get_string('errorparsingfunctiondata', 'qtype_programmedresp') . '</span>');
+            return false;
         }
-        
+
         // Get the questiontext vars to fill the variables selector
         $questiontextvars = programmedresp_get_question_vars($questiontext);
-        
+
         // Concatenated vars (if it's a new insertion getting from _GET if not from $args array)
-        //ex: concatvars[concatvar_0] = "nom donat per l'usuari"
         $concatvars = programmedresp_get_concat_vars($args);
 
-        // Map arg type id => arg type name (fixed, variable or guidedquiz)
+        // Map arg type id => arg type name (fixed, variable or linker)
         $argtypes = programmedresp_get_argtypes_mapping();
-            
-        $this->print_form_htmlraw('<br/><div class="programmedresp_functiondescription">'.stripslashes(format_text($functiondata->description, FORMAT_MOODLE)).'</div>');
+
+        // Get the linkerdesc vars only if a valid quizid is passed
+        $linkervars = programmedresp_get_linkerdesc_vars($quizid);
         
+        $this->print_form_htmlraw('<br/><div class="programmedresp_functiondescription">' . stripslashes(format_text($functiondata->description, FORMAT_MOODLE)) . '</div>');
+
         // Assign arguments
-        $argstitle = '<strong>'.get_string('functionarguments', 'qtype_programmedresp').'</strong>';
-        $displaylink = '<a href="#" onclick="return functionsection_visible();">'.get_string("refresh", "qtype_programmedresp").'</a>';
-        $argstitle .= '<br>( '. $displaylink . ' )';
+        $argstitle = '<strong>' . get_string('functionarguments', 'qtype_programmedresp') . '</strong>';
+        $displaylink = '<a href="#" onclick="return functionsection_visible();">' . get_string("refresh", "qtype_programmedresp") . '</a>';
+        $argstitle .= '<br>( ' . $displaylink . ' )';
         $this->print_form_title($argstitle);
         foreach ($functiondata->params as $key => $param) {
-                
-        	// Various param types
-        	if (strpos($param->type, '|') != false) {
-        		$paramtypes = explode('|', $param->type);
-        		foreach ($paramtypes as $key => $paramtype) {
-        			$paramtypes[$key] = get_string('paramtype'.$paramtype, 'qtype_programmedresp');
-        		}
-        		$paramsstring = implode(' '.get_string('or','qtype_programmedresp').' ', $paramtypes);
-        		
-        	// Only one param type
-        	} else {
-        	    $paramsstring = get_string("paramtype".$param->type, "qtype_programmedresp");
-        	}
-        	
-        	// Argument description
-            $this->print_form_htmlraw('<div class="fitem"><div class="fitemtitle">'.format_text($param->description, FORMAT_MOODLE).' ('.get_string("type", "qtype_programmedresp").': '.$paramsstring.')</div>');
-            
+
+            // Various param types
+            if (strpos($param->type, '|') != false) {
+                $paramtypes = explode('|', $param->type);
+                foreach ($paramtypes as $key => $paramtype) {
+                    $paramtypes[$key] = get_string('paramtype' . $paramtype, 'qtype_programmedresp');
+                }
+                $paramsstring = implode(' ' . get_string('or', 'qtype_programmedresp') . ' ', $paramtypes);
+
+                // Only one param type
+            } else {
+                $paramsstring = get_string("paramtype" . $param->type, "qtype_programmedresp");
+            }
+
+            // Argument description
+            $this->print_form_htmlraw('<div class="fitem"><div class="fitemtitle">' . format_text($param->description, FORMAT_MOODLE) . ' (' . get_string("type", "qtype_programmedresp") . ': ' . $paramsstring . ')</div>');
+
             // Argument value type
-            $paramelement = '<select name="argtype_'.$key.'" onchange="change_argument_type(this, \''.$key.'\');">';
+            $paramelement = '<select name="argtype_' . $key . '" onchange="change_argument_type(this, \'' . $key . '\');">';
             foreach ($argtypes as $argid => $argname) {
-            	
-            	if (!$questiontextvars && ($argname == 'variable' || $argname == 'concat')) {
-            		continue;
-            	}
-            	
-            	// If there are previous data and it is the selected argument type: selected
-            	$selectedstr = '';
-            	if ($args && $args[$key]->type == $argid) {
-            		$selectedstr = 'selected="selected"';
-            	}
-            	
-            	$paramelement.= '<option value="'.$argid.'" '.$selectedstr.'>'.get_string('arg'.$argname, 'qtype_programmedresp').'</option>';
+
+                if (!$questiontextvars && ($argname == 'variable' || $argname == 'concat')) {
+                    continue;
+                }
+
+                // If there are previous data and it is the selected argument type: selected
+                $selectedstr = '';
+                if ($args && $args[$key]->type == $argid) {
+                    $selectedstr = 'selected="selected"';
+                }
+
+                $paramelement.= '<option value="' . $argid . '" ' . $selectedstr . '>' . get_string('arg' . $argname, 'qtype_programmedresp') . '</option>';
             }
             $paramelement.= '</select>&nbsp;';
-            
-            
+
+
             // Argument value type dependencies
             $fixedvalue = '';
             $variablevalue = '';
@@ -226,110 +230,107 @@ class prgrammedresp_output {
             // TODO: Change var name
             $linkerclass = 'hidden_arg';
             $concatclass = 'hidden_arg';
-            
+
             // If it's a new insertion we show fixed
             if (!$args) {
-            	$fixedclass = ''; 
-            	
-                // TODO: change to switch case
+                $fixedclass = '';
             } else {
-	            if ($args[$key]->type == PROGRAMMEDRESP_ARG_FIXED) {
-	            	$fixedvalue = $args[$key]->value;
-	            	$fixedclass = '';
-	            	
-	            } else if ($args[$key]->type == PROGRAMMEDRESP_ARG_VARIABLE) {
-                        //var_dump($vars['programmed'][$args[$key]->value]->varname);
-	            	$variablevalue = $vars['programmed'][$args[$key]->value]->varname;
-	            	$variableclass = '';
-	            	
-	            } else if ($args[$key]->type == PROGRAMMEDRESP_ARG_CONCAT) {
-	            	$concatdata = programmedresp_get_concatvar_data($args[$key]->value);
-	            	$concatvalue = $concatdata->name;
-	            	$concatclass = '';
-	            	
-	            } else if ($args[$key]->type == PROGRAMMEDRESP_ARG_LINKER) {
-                        // Si es pregunta nova desde question bank i no es va assignar variable linker
-                        //  no cumplira aquesta condició
-                        if (!empty($args[$key]->value)) { 
-                            $linkervalue = $vars['linker'][$args[$key]->value]->id;
-                        }
-                        $linkerclass = '';    
+                if ($args[$key]->type == PROGRAMMEDRESP_ARG_FIXED) {
+                    $fixedvalue = $args[$key]->value;
+                    $fixedclass = '';
+                } else if ($args[$key]->type == PROGRAMMEDRESP_ARG_VARIABLE) {
+                    $variablevalue = $vars[$args[$key]->value]->varname;
+                    $variableclass = '';
+                } else if ($args[$key]->type == PROGRAMMEDRESP_ARG_CONCAT) {
+                    $concatdata = programmedresp_get_concatvar_data($args[$key]->value);
+                    $concatvalue = $concatdata->name;
+                    $concatclass = '';
+                } else if ($args[$key]->type == PROGRAMMEDRESP_ARG_LINKER && $linkervars) {
 
-	            }
+                    $conditions = array(
+                        'quizid' => $quizid,
+                        'programmedrespargid' => $args[$key]->id,
+                    );
+
+                    $vararg = $DB->get_record('qtype_linkerdesc_var_arg', $conditions);
+                    // assign the previous selected linkervar
+                    $linkervalue = $linkervars[$vararg->type . '_' . $vararg->instanceid];
+                    $linkerclass = '';
+                }
             }
-            
+
             // Fixed
-            $paramelement.= '<input type="text" name="fixed_'.$key.'" id="id_argument_fixed_'.$key.'" value="'.$fixedvalue.'" class="'.$fixedclass.'"/>';
-            
+            $paramelement.= '<input type="text" name="fixed_' . $key . '" id="id_argument_fixed_' . $key . '" value="' . $fixedvalue . '" class="' . $fixedclass . '"/>';
+
             // Variables
             if ($questiontextvars) {
-	            $paramelement.= '<select name="variable_'.$key.'" id="id_argument_variable_'.$key.'" class="'.$variableclass.'">';
-	            foreach ($questiontextvars as $varname) {
-	            	
-	            	$selectedstr = '';
-	            	if ($variablevalue == $varname) {
-	            		$selectedstr = 'selected="selected"';
-	            	}
-	                $paramelement.= '<option value="'.$varname.'" '.$selectedstr.'>'.get_string("var", "qtype_programmedresp").' '.$varname.'</option>';
-	            }
-	            $paramelement.= '</select>';
-            
-	            // Concat vars
-	            $paramelement.= '<select name="concat_'.$key.'" id="id_argument_concat_'.$key.'" class="'.$concatclass.'">';
-	            foreach ($concatvars as $varname => $varvalue) {
-	            	
-	            	$selectedstr = '';
-	            	if ($concatvalue == $varname) {
-	            		$selectedstr = 'selected="selected"';
-	            	}
-	            	$paramelement.= '<option value="'.$varname.'" '.$selectedstr.'>'.get_string("var", "qtype_programmedresp").' '.$varvalue.'</option>';
-	            }
-                    $paramelement.= '</select>';
-                    
-            // Variables linker
-            }
-            if (!empty($this->linkervars)) {
-                    $paramelement.= '<select name="linker_'.$key.'" id="id_argument_linker_'.$key.'" class="'.$linkerclass.'">';
-                    foreach ($this->linkervars as $qid => $linkerq) {
-                        $selectedstr = '';
-                        if ($linkervalue == $linkerq->varname) {
-                            $selectedstr = 'selected="selected"';
-                        }
-                        $paramelement.= '<option value="'.$linkerq->id.'" '.$selectedstr.'>'.$linkerq->varname.'</option>';
+                $paramelement.= '<select name="variable_' . $key . '" id="id_argument_variable_' . $key . '" class="' . $variableclass . '">';
+                foreach ($questiontextvars as $varname) {
+
+                    $selectedstr = '';
+                    if ($variablevalue == $varname) {
+                        $selectedstr = 'selected="selected"';
                     }
-                    $paramelement.= '</select>';
+                    $paramelement.= '<option value="' . $varname . '" ' . $selectedstr . '>' . get_string("var", "qtype_programmedresp") . ' ' . $varname . '</option>';
+                }
+                $paramelement.= '</select>';
+
+                // Concat vars
+                $paramelement.= '<select name="concat_' . $key . '" id="id_argument_concat_' . $key . '" class="' . $concatclass . '">';
+                foreach ($concatvars as $varname => $varvalue) {
+
+                    $selectedstr = '';
+                    if ($concatvalue == $varname) {
+                        $selectedstr = 'selected="selected"';
+                    }
+                    $paramelement.= '<option value="' . $varname . '" ' . $selectedstr . '>' . get_string("var", "qtype_programmedresp") . ' ' . $varvalue . '</option>';
+                }
+                $paramelement.= '</select>';
+
+                // Variables linker
             }
-            
-            $paramelement.= '<span  id="id_argument_linker_'.$key.'" class="'.$linkerclass.'"></span><input type="hidden" name="linker'.$key.'" value=""/>';
-            $this->print_form_htmlraw('<div class="felement fselect">'.$paramelement.'</div></div>');
+            //TODO: si estem dins d'un quiz però no s'ha assignat pregunta linker, no tindrem variables. S'ha de notificar
+            if ($linkervars) {
+                $paramelement.= '<select name="linker_' . $key . '" id="id_argument_linker_' . $key . '" class="' . $linkerclass . '">';
+                foreach ($linkervars as $varid => $varname) {
+                    $selectedstr = '';
+                    if ($linkervalue == $varname) {
+                        $selectedstr = 'selected="selected"';
+                    }
+                    $paramelement.= '<option value="' . $varid . '" ' . $selectedstr . '>' . $varname . '</option>';
+                }
+                $paramelement.= '</select>';
+            }
+
+            $paramelement.= '<span  id="id_argument_linker_' . $key . '" class="' . $linkerclass . '"></span><input type="hidden" name="linker' . $key . '" value=""/>';
+            $this->print_form_htmlraw('<div class="felement fselect">' . $paramelement . '</div></div>');
         }
-        
-        
+
+
         // To assign labels
         $this->print_form_htmlraw('<br/>');
-        
+
         // Link to show the labels edition elements
         $this->print_form_htmlraw('<div id="id_responselabelslink">');
-        $displayresponselabelslink = '<a href="#" onclick="return display_responselabels();">'.get_string('editresponselabels', 'qtype_programmedresp').'</a>';
+        $displayresponselabelslink = '<a href="#" onclick="return display_responselabels();">' . get_string('editresponselabels', 'qtype_programmedresp') . '</a>';
         $this->print_form_html($displayresponselabelslink);
         $this->print_form_htmlraw('</div>');
-        
+
         // Hidden by default
         $this->print_form_htmlraw('<div id="id_responseslabels">');
-        $this->print_form_title('<strong>'.get_string('questionresultslabels', 'qtype_programmedresp').'</strong>');
+        $this->print_form_title('<strong>' . get_string('questionresultslabels', 'qtype_programmedresp') . '</strong>');
         for ($i = 0; $i < $functiondata->nreturns; $i++) {
-            
+
             if (!empty($functiondata->results[$i])) {
                 $value = str_replace('"', '&quot;', $functiondata->results[$i]);
             } else {
                 $value = '';
             }
-            
-            $this->print_form_text(get_string("response", "qtype_programmedresp").' '.($i + 1), 'resp_'.$i, $value);
+
+            $this->print_form_text(get_string("response", "qtype_programmedresp") . ' ' . ($i + 1), 'resp_' . $i, $value);
         }
         $this->print_form_htmlraw('</div>');
     }
-    
 
     function print_form_title($title) {
         $this->mform->addElement('html', '<div class="fitem"><div class="fitemtitle">' . $title . '</div></div>');
@@ -341,6 +342,9 @@ class prgrammedresp_output {
 
     function print_form_text($title, $elementname, $value = '', $attrs = false) {
         $this->mform->addElement('text', $elementname, $title, $attrs);
+        // TODO: millorar. Cal detectar el tipus de parametre. Tal com esta ara tot
+        // ho evaluem com a float
+        $this->mform->setType($elementname, PARAM_FLOAT);
         $this->mform->setDefault($elementname, $value);
     }
 

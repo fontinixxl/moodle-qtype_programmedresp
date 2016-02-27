@@ -40,11 +40,23 @@ require_once($CFG->dirroot . '/question/type/programmedresp/question.php');
 class qtype_programmedresp extends question_type {
 
     public function extra_question_fields() {
-        return array('qtype_programmedresp', 'id', 'programmedrespfid', 'tolerancetype', 'tolerance');
+        return array('qtype_programmedresp', 'programmedrespfid', 'tolerancetype', 'tolerance');
     }
 
     function questionid_column_name() {
         return 'question';
+    }
+
+    /**
+     * Set any missing settings for this question to the default values. This is
+     * called before displaying the question editing form.
+     *
+     * @param object $questiondata the question data, loaded from the databsae,
+     *      or more likely a newly created question object that is only partially
+     *      initialised.
+     */
+    function set_default_options($questiondata) {
+        // I'm not sure if this method can be usefull..
     }
 
     /**
@@ -59,44 +71,19 @@ class qtype_programmedresp extends question_type {
     public function get_question_options($question) {
         global $DB;
         parent::get_question_options($question);
-        // Change $question->options->id (id of programmedresp table) obtained by extra_question_fields()
-        $question->options->programmedrespid = $question->options->id;
-        unset($question->options->id);
-        // Store question vars from this question (local). 
-        $question->options->vars['programmed'] = $DB->get_records('qtype_programmedresp_var', array('question' => $question->id));
-        // Get all function categories
+        $question->options->programmedresp = $DB->get_record('qtype_programmedresp', array('question' => $question->id));
+        if (!$question->options->programmedresp) {
+            return false;
+        }
+        $question->options->vars = $DB->get_records('qtype_programmedresp_var', array('question' => $question->id));
+        $question->options->concatvars = $DB->get_records('qtype_programmedresp_conc', array('question' => $question->id));
+        $question->options->args = $DB->get_records('qtype_programmedresp_arg', array('programmedrespid' => $question->options->programmedresp->id), '', 'argkey, id, type, value');
+        $question->options->responses = $DB->get_records('qtype_programmedresp_resp', array('programmedrespid' => $question->options->programmedresp->id), 'returnkey ASC', 'returnkey, label');
         $question->options->function = $DB->get_record('qtype_programmedresp_f', array('id' => $question->options->programmedrespfid));
-        $question->options->args = $DB->get_records('qtype_programmedresp_arg', array('programmedrespid' => $question->options->programmedrespid), '', 'argkey, type, value');
-        $question->options->responses = $DB->get_records('qtype_programmedresp_resp', array('programmedrespid' => $question->options->programmedrespid), 'returnkey ASC', 'returnkey, label');
-
-
-        $qtype = question_bank::get_qtype('linkerdescription', false);
-        if (get_class($qtype) == 'qtype_missingtype') {
-            // Mostrar alert o alguna notificació per indicar que no es podran 
-            // utilitzar variables linkerdescription
-//            var_dump("Qtype linkerdescription doen't exit!!");
-            return;
-        }
-
-        // cmid is needed to get the quiz
-        $cmid = optional_param('cmid', 0, PARAM_INT);
-        if (!$cmid) {
-            return true;
-        }
-        // TODO: Ensure that this function always return a quiz
-        list($quiz, $unused) = get_module_from_cmid($cmid);
-        // get the qtype_linkerdescription questions in this particular quiz
-        // questions in quiz
-        $qinquiz = $DB->get_records('qtype_linkerdescription', array('quiz' => $quiz->id), null, 'question');
-        if (!$qinquiz) {
-            return;
-        }
-        $question->options->vars['linker'] = $DB->get_records_list('qtype_programmedresp_var', 'question', array_keys($qinquiz));
-
-//        print_object($question->options->vars);
     }
 
     /**
+     * TODO: refactor
      * Saves question-type specific options
      *
      * This is called by {@link save_question()} to save the question-type specific data
@@ -106,51 +93,80 @@ class qtype_programmedresp extends question_type {
      */
     public function save_question_options($question) {
         global $DB;
-//        print_object(__CLASS__." ".__FUNCTION__);
         parent::save_question_options($question);
-//      $this->save_hints($question);
         $programmedresp = $DB->get_record('qtype_programmedresp', array('question' => $question->id));
         // If we are updating, they will be reinserted
         $DB->delete_records('qtype_programmedresp_resp', array('programmedrespid' => $programmedresp->id));
-        //$argtypesmapping = programmedresp_get_argtypes_mapping();
         /*
          * Params are getting directly from POST because we don't know the field names
          * They are generated by AJAX in edit_question_form. (question vars and arguments).
          * Once we know there are params, they will be cleaned propertly.
          */
         $argtypesmapping = programmedresp_get_argtypes_mapping();
+        
         $i = 0;
-        $vars = array();
-        $args = array();
+        $vars = $args = $concatvars = array();
         foreach ($_POST as $varname => $value) {
+            
             // Insert var
             if (substr($varname, 0, 4) == 'var_') {
                 $vardata = explode('_', $varname);
+                empty($vars[$vardata[2]]) && $vars[$vardata[2]] = new stdClass();
                 $vars[$vardata[2]]->{$vardata[1]} = clean_param($value, PARAM_FLOAT);   // integer or float
                 // Insert a function argument
             } else if (substr($varname, 0, 8) == 'argtype_') {
+                $argobj = new stdClass();
+                $argobj->programmedrespid = $programmedresp->id;
+                $argobj->argkey = intval(substr($varname, 8));  // integer
+                $argobj->type = intval($value);
 
-                $args[$i]->programmedrespid = $programmedresp->id;
-                $args[$i]->argkey = intval(substr($varname, 8));  // integer
-                $args[$i]->type = intval($value);
-//                print_object($args[$i]);
-                // There are a form element for each var type (fixed, variable, concat, linkerdescription)
-                // $argvalue contains the value of the selected element
-                // TODO: For guidedquiz, value is empty
-                $argvalue = $_POST[$argtypesmapping[intval($value)] . "_" . $args[$i]->argkey];
-                $args[$i]->value = clean_param($argvalue, PARAM_TEXT);  // integer or float if it's fixed or a varname
-
+                // There are a form element for each var type (fixed, variable, concat, linkerdesc)
+                // $argvalue contains the value of the selected var
+                $argname = $argtypesmapping[intval($value)] . "_" . $argobj->argkey;
+                $argvalue = optional_param($argname, false, PARAM_ALPHANUMEXT);
+                // empty for linkerdesc arg context different from quiz module
+                $argobj->value = (!empty($argvalue))
+                        ? clean_param($argvalue, PARAM_TEXT)  // integer or float if it's fixed or a varname
+                        : '';
+                
+                $args[$i] = $argobj;
                 $i++;
+                
+            // Inserting/Updating the new concat var
+            } else if (substr($varname, 0, 10) == 'concatvar_') {
+                $concatnum = intval(substr($varname, 10));
+                if (!$concatvalues = optional_param('concatvar_' . $concatnum, false, PARAM_ALPHANUM)) {
+                        print_error('errorcantfindvar', 'qtype_programmedresp', $varname);
+                }
+                $concatobj = new stdClass();
+                $concatobj->readablename = required_param('nconcatvar_' . $concatnum, PARAM_ALPHAEXT);
+                $concatobj->vars = programmedresp_serialize($concatvalues);
+                
+                $concatvars['concatvar_' . $concatnum] = $concatobj;
                 // Insert a function response
             } else if (substr($varname, 0, 5) == 'resp_') {
+                $resp = new stdClass();
                 $resp->programmedrespid = $programmedresp->id;
                 $resp->returnkey = intval(substr($varname, 5));   // $varname must be something like resp_0
                 $resp->label = clean_param($value, PARAM_TEXT);
                 if (!$DB->insert_record('qtype_programmedresp_resp', $resp)) {
                     print_error('errordb', 'qtype_programmedresp');
                 }
+            
+            // Guardem els valors linker seleccionat per cada argument
+            } else if (substr($varname, 0, 7) == 'linker_') {
+                $linkervardata = explode('_', clean_param($value, PARAM_ALPHANUMEXT));
+                $argindex = intval(substr($varname, -1));
+                
+                $linkerobj = new stdClass();
+                $linkerobj->quizid = $question->quizid;
+                $linkerobj->type = $linkervardata[0]; //var or concatvar
+                $linkerobj->instanceid = $linkervardata[1];
+                
+                $linkervararg[$argindex] = $linkerobj;
             }
         }
+        
         // Delete any left over old answer records.
         if (!empty($vars)) {
             foreach ($vars as $varname => $var) {
@@ -171,12 +187,39 @@ class qtype_programmedresp extends question_type {
                     }
                 }
             }
-            // TODO: If varnames are changes, we need to remove the old ones. If not they ara still in database!!
-            // METODE DE LES 7 DIFERENCIES !!
+            // TODO: Delete from DB all unused vars:
+            // If varnames are changes, we need to remove the old ones.
+            // CAUTION!! These vars has already been assigned to any function argument
         }
-
+        // If there are previous concat vars delete the non used
+        $oldconcatvars = $DB->get_records('qtype_programmedresp_conc', array('question' => $question->id),'id', 'id, name');
+        if ($oldconcatvars) {
+            foreach ($oldconcatvars as $oldconcatvar) {
+                if (empty($concatvars[$oldconcatvar->name])) {
+                    $DB->delete_records('qtype_programmedresp_conc', array('id' => $oldconcatvar->id));
+                }
+            }
+        }
+        if (!empty($concatvars)) {
+            foreach ($concatvars as $concatname => $concatvar) {
+                $concatvar->name = $concatname;
+                $concatvar->question = $question->id;
+                
+                // Update
+                if ($concatvar->id = $DB->get_field('qtype_programmedresp_conc', 'id', array('question' => $question->id, 'name' => $concatname))) {
+                    if (!$DB->update_record('qtype_programmedresp_conc', $concatvar)) {
+                        print_error('errordb', 'qtype_programmedresp');
+                   }
+                } else {
+                    if (!$concatvars[$concatname]->id = $DB->insert_record('qtype_programmedresp_conc', $concatvar)) {
+                        print_error('errordb', 'qtype_programmedresp');
+                    }
+                }
+            }
+        }
+        
         if ($args) {
-            foreach ($args as $arg) {
+            foreach ($args as $argkey => $arg) {
                 // If it's a variable we must look for the qtype_programmedresp_var identifier
                 if ($arg->type == PROGRAMMEDRESP_ARG_VARIABLE) {
                     if (!isset($vars[$arg->value])) {
@@ -188,36 +231,11 @@ class qtype_programmedresp extends question_type {
                 // If it's a concat var we must serialize the concatvar_N param
                 if ($arg->type == PROGRAMMEDRESP_ARG_CONCAT) {
 
-                    $concatnum = intval(substr($arg->value, 10));
-                    if (!$concatvalues = optional_param('concatvar_' . $concatnum, false, PARAM_ALPHANUM)) {
+                    if (!isset($concatvars[$arg->value])) {
                         print_error('errorcantfindvar', 'qtype_programmedresp', $arg->value);
-                    } else {
-                        if (!$concreadablename = optional_param('nconcatvar_' . $concatnum, false, PARAM_ALPHANUM)) {
-                            print_error('errorcantfindvar', 'qtype_programmedresp', $arg->value);
-                        }
                     }
-
-                    // Inserting/Updating the new concat var
-                    $concatvarname = 'concatvar_' . $concatnum;
-                    if (!$concatobj = $DB->get_record('qtype_programmedresp_conc', array('origin' => 'question', 'instanceid' => $programmedresp->id, 'name' => $concatvarname))) {
-                        $concatobj = new stdClass();
-                        $concatobj->origin = 'question';
-                        $concatobj->instanceid = $programmedresp->id;
-                        $concatobj->name = $concatvarname;
-                        $concatobj->readablename = $concreadablename;
-                        $concatobj->vars = programmedresp_serialize($concatvalues);
-                        if (!$concatobj->id = $DB->insert_record('qtype_programmedresp_conc', $concatobj)) {
-                            print_error('errordb', 'qtype_programmedresp');
-                        }
-                    } else {
-                        $concatobj->vars = programmedresp_serialize($concatvalues);
-                        $DB->update_record('qtype_programmedresp_conc', $concatobj);
-                    }
-
-                    $arg->value = $concatobj->id;
+                    $arg->value = $concatvars[$arg->value]->id;
                 }
-                
-                // TODO: add option for PROGRAMMEDRESP_LINKER (old guiedquiz)
                 
                 // Update
                 if ($arg->id = $DB->get_field('qtype_programmedresp_arg', 'id', array('programmedrespid' => $arg->programmedrespid, 'argkey' => $arg->argkey))) {
@@ -228,12 +246,25 @@ class qtype_programmedresp extends question_type {
 
                     // Insert
                 } else {
-                    if (!$DB->insert_record('qtype_programmedresp_arg', $arg)) {
+                    if (!$arg->id = $DB->insert_record('qtype_programmedresp_arg', $arg, true)) {
                         print_error('errordb', 'qtype_programmedresp');
+                    }
+                }
+                
+                // If it's a linkerdesc qtype it must be stored with the selected var 
+                if (!empty($linkervararg[$argkey]) && $arg->type == PROGRAMMEDRESP_ARG_LINKER) {
+                    $linkervararg[$argkey]->programmedrespargid = $arg->id;
+                    
+                    if ($linkervararg[$argkey]->id = $DB->get_field('qtype_linkerdesc_var_arg', 'id', array(
+                        'quizid' => $question->quizid, 'programmedrespargid' => $arg->id))) {
+                        $DB->update_record('qtype_linkerdesc_var_arg', $linkervararg[$argkey]);
+                    } else {
+                        $DB->insert_record('qtype_linkerdesc_var_arg', $linkervararg[$argkey]);
                     }
                 }
             }
         }
+        
         return true;
     }
 

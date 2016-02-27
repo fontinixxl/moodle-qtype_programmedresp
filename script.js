@@ -47,16 +47,11 @@ function get_next_concat_num() {
     return maxconcatnum;
 }
 
-function display_vars(element, edit, displayfunctionbutton) {
+function display_vars(element, edit) {
     callerelement = element;
 
     if (edit != undefined) {
         editing = edit;
-    }
-
-    var functionbuttonstr = '';
-    if (displayfunctionbutton) {//if is True
-        functionbuttonstr = '&displayfunctionbutton=true';
     }
 
     var varsheader = document.getElementById("id_varsheader");
@@ -76,7 +71,7 @@ function display_vars(element, edit, displayfunctionbutton) {
 
     // Stripping garbage, we only want vars as much as we can
     questiontextvalue = questiontextvalue.replace(questiontextregexpfilter, " ");
-    display_section("action=displayvars" + functionbuttonstr + "&questiontext=" + questiontextvalue); //params
+    display_section("action=displayvars" + "&questiontext=" + questiontextvalue); //params
 }
 
 function functionsection_visible() {
@@ -254,7 +249,7 @@ function add_concat_var() {
             };
 
     var params = "action=addconcatvar&concatnum=" + concatnum + varsstring;
-
+    console.log(params);
     dir = wwwroot + "/question/type/programmedresp/contents.php";
     YUI().use('yui2-connection', function(Y) {
         Y.YUI2.util.Connect.asyncRequest('POST', dir, callbackHandler, params);

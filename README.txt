@@ -73,8 +73,8 @@ value. If the function returns an array the return phpdoc tag should follow this
 format "@return array Description1|Description2" using the "|" character as separator
 
 
-LINKERDESCRIPTION QUESTION VARIABLE LINKAGE
-There is another function argument type, the linker type. The "qtype_linkerdescription"
+linkerdesc QUESTION VARIABLE LINKAGE
+There is another function argument type, the linker type. The "qtype_linkerdesc"
 allows the addition of variables to the question text, following the variables format 
 described above; this argument type allows users to use these linker description variables 
 as a function argument.

@@ -12,26 +12,20 @@ require_once($CFG->dirroot . '/question/type/programmedresp/lib.php');
 require_once($CFG->dirroot . '/question/type/programmedresp/programmedresp_output_ajax.class.php');
 require_once($CFG->dirroot . '/question/editlib.php');
 
+
+
 $action = optional_param('action', false, PARAM_ALPHAEXT);
 if (!$action) {
     die();
 }
-global $DB;
-$quizid = optional_param('quizid', 0, PARAM_INT);
+global $DB, $PAGE;
 
-$linkervars = array();
-if ($quizid) {
-    if ($qinquiz = $DB->get_records('qtype_linkerdescription', array('quiz' => $quizid), null, 'question')) {
-        $linkervars = $DB->get_records_list('qtype_programmedresp_var', 'question', array_keys($qinquiz));
-    }
-}
-$outputmanager = new programmedresp_output_ajax($mform, $linkervars);
+$outputmanager = new programmedresp_output_ajax($mform);
 switch ($action) {
 
     // Question text vars
     case 'displayvars' :
-        $displayfunctionbutton = optional_param('displayfunctionbutton', true, PARAM_INT);
-        $outputmanager->display_vars(false, false, $displayfunctionbutton);
+        $outputmanager->display_vars(false, false);
         break;
 
     // Functions <select>
@@ -43,6 +37,7 @@ switch ($action) {
     // Function arguments
     case 'displayargs' :
         $functionid = optional_param('function', false, PARAM_INT);
+        // TODO: passar-li quiz id
         $outputmanager->display_args($functionid);
         break;
 

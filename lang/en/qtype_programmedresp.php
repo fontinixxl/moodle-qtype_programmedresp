@@ -70,6 +70,7 @@
     $string['parentcategory'] = 'Parent category';
     $string['pluginname'] = 'Programmed responses';
     //new QTypeEngine
+    $string['pluginname_help'] = 'TODO: Description about this qtype';
     $string['pluginname_link'] = 'question/type/programmedresp';
     $string['pluginnameadding'] = 'Adding a programmedresp question';
     $string['pluginnameediting'] = 'Editing a programmedresp question';
@@ -93,5 +94,7 @@
     $string['valueincrement'] = 'Increment';
     $string['var'] = 'Variable';
     $string['varsvalues'] = 'Variables values';
+    $string['vartypevar'] = 'variable';
+    $string['vartypeconcatvar'] = 'concat variable';
     
     
