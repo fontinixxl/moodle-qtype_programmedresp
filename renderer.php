@@ -36,31 +36,117 @@ defined('MOODLE_INTERNAL') || die();
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class qtype_programmedresp_renderer extends qtype_renderer {
+
+    /**
+     * Generate the display of the formulation part of the question. This is the
+     * area that contains the quetsion text, and the controls for students to
+     * input their answers. Some question types also embed bits of feedback, for
+     * example ticks and crosses, in this area.
+     *
+     * @param question_attempt $qa the question attempt to display.
+     * @param question_display_options $options controls what should and should not be displayed.
+     * @return string HTML fragment.
+     */
     public function formulation_and_controls(question_attempt $qa,
             question_display_options $options) {
 
         $question = $qa->get_question();
+        $inputattributes = array(
+            'type' => 'text',
+        );
 
-        $questiontext = $question->format_questiontext($qa);
-        $placeholder = false;
-        if (preg_match('/_____+/', $questiontext, $matches)) {
-            $placeholder = $matches[0];
-        }
-        $input = '**subq controls go in here**';
-
-        if ($placeholder) {
-            $questiontext = substr_replace($questiontext, $input,
-                    strpos($questiontext, $placeholder), strlen($placeholder));
+        if ($options->readonly) {
+            $inputattributes['disabled'] = 'disabled';
         }
 
-        $result = html_writer::tag('div', $questiontext, array('class' => 'qtext'));
+        $inputs = array();
+        $feedbackimg = array();
+        $classes = array();
+        $responses = array();
+        foreach ($question->expectedresps as $expectedresp) {
+            $respkey = $question->field($expectedresp->returnkey);
+            $responses[$respkey] = $qa->get_last_qt_var($respkey);
+            $name = $qa->get_qt_field_name($respkey);
 
-        /* if ($qa->get_state() == question_state::$invalid) {
-            $result .= html_writer::nonempty_tag('div',
-                    $question->get_validation_error(array('answer' => $currentanswer)),
+            $inputattributes['name'] = $name;
+            $inputattributes['value'] = $responses[$respkey];
+            $inputattributes['id'] = $name;
+
+            $hidden = '';
+            if (!$options->readonly) {
+                $hidden = html_writer::empty_tag('input', array(
+                            'type' => 'hidden',
+                            'name' => $name,
+                            'value' => 0,
+                ));
+            }
+
+            $class = 'r' . ($expectedresp->returnkey % 2);
+            if ($options->correctness) {
+                $fraction = $question->get_matching_answer($responses[$respkey],
+                        $expectedresp->returnkey);
+                if(!$fraction){
+                    $fraction = 0;
+                }
+                $feedbackimg[$expectedresp->returnkey] = $this->feedback_image($fraction);
+                $inputattributes['class'] = $this->feedback_class($fraction);
+            } else {
+                $feedbackimg[$expectedresp->returnkey] = '';
+            }
+            $classes[$expectedresp->returnkey] = $class;
+
+            $inputs[$expectedresp->returnkey] = html_writer::tag('bel', $expectedresp->label,
+                    array('for' => $inputattributes['id'], 'class' => 'programmedresp')).
+                    html_writer::empty_tag('input', $inputattributes);
+
+        }
+
+        $result = '';
+        $result .= html_writer::tag('div', $question->format_questiontext($qa),
+                array('class' => 'qtext'));
+
+        $result .= html_writer::start_tag('div', array('class' => 'ablock'));
+        $result .= html_writer::start_tag('div', array('class' => 'answer'));
+        foreach ($inputs as $key => $input) {
+            $result .= html_writer::tag('div', $input . ' ' . $feedbackimg[$key],
+                    array('class' => $classes[$key])) . PHP_EOL;
+        }
+        $result .= html_writer::end_tag('div'); // answer
+        $result .= html_writer::end_tag('div'); // ablock
+
+        if ($qa->get_state() == question_state::$invalid) {
+            $errorvalidate = $question->get_validation_error($responses);
+            $result .= html_writer::nonempty_tag('div', $errorvalidate,
                     array('class' => 'validationerror'));
-        }*/
+        }
+
         return $result;
+    }
+
+    /**
+     * Gereate an automatic description of the correct response to this question.
+     * Not all question types can do this. If it is not possible, this method
+     * should just return an empty string.
+     *
+     * @param question_attempt $qa the question attempt to display.
+     * @return string HTML fragment.
+     */
+    public function correct_response(question_attempt $qa) {
+
+        $question = $qa->get_question();
+        $answers = $question->answers;
+        $tolerance = (float) $question->tolerance;
+        $numdecimals =explode('.',$tolerance);
+
+        $correctans = array();
+        foreach ($question->expectedresps as $expectedresp) {
+            $correctans[] = round($answers[$expectedresp->returnkey]->answer, strlen($numdecimals[1]));
+        }
+        if (!empty($correctans)) {
+            return get_string('correctansweris', 'qtype_multichoice', implode(', ', $correctans));
+        }
+
+        return '';
     }
 
     public function specific_feedback(question_attempt $qa) {
@@ -68,8 +154,4 @@ class qtype_programmedresp_renderer extends qtype_renderer {
         return '';
     }
 
-    public function correct_response(question_attempt $qa) {
-        // TODO.
-        return '';
-    }
 }

@@ -36,9 +36,9 @@ require_once($CFG->dirroot . '/question/type/programmedresp/programmedresp_outpu
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class qtype_programmedresp_edit_form extends question_edit_form {
-    
+
     private $quizid;
-    
+
     public function __construct($submiturl, $question, $category, $contexts, $formeditable = true) {
 
         $installed = is_qtype_linkerdesc_installed();
@@ -55,19 +55,19 @@ class qtype_programmedresp_edit_form extends question_edit_form {
 
     protected function definition_inner($mform) {
         global $CFG, $DB, $PAGE;
-        
+
         $PAGE->requires->js('/question/type/programmedresp/script.js');
 
+        // TODO: Refacor it with something more clean
         // Adding required wwwroot and quizid vars to be accessible from script.js
-        // TODO: Buscar una manera més elegant de passar aquestes variables al javascript
         echo "<script type=\"text/javascript\">//<![CDATA[\n" .
         "this.wwwroot = '" . $CFG->wwwroot . "';\n" .
-        "this.quizid= '" . $this->quizid . "';\n" . 
+        "this.quizid= '" . $this->quizid . "';\n" .
         "//]]></script>\n";
 
         $mform->addElement('hidden', 'quizid', $this->quizid);
         $mform->setType('quizid', PARAM_INT);
-        
+
         $outputmanager = new prgrammedresp_output($mform);
 
         $editingjsparam = 'false';
@@ -91,7 +91,7 @@ class qtype_programmedresp_edit_form extends question_edit_form {
 
         $mform->addElement('html', '<div id="id_vars_content">');
         if (!empty($this->question->id)) {
-            $outputmanager->display_vars($this->question->questiontext, 
+            $outputmanager->display_vars($this->question->questiontext,
                     $this->question->options->args, $this->question->options->concatvars);
         }
         $mform->addElement('html', '</div>');
@@ -114,7 +114,7 @@ class qtype_programmedresp_edit_form extends question_edit_form {
         }
         // Category select
         $catattrs['onchange'] = 'update_addfunctionurl();return display_functionslist(this);';
-        $mform->addElement('select', 'functioncategory', 
+        $mform->addElement('select', 'functioncategory',
                 get_string('functioncategory', 'qtype_programmedresp'), $catoptions, $catattrs);
 
         // Dirty hack to add the function (added later through ajax)
@@ -131,7 +131,7 @@ class qtype_programmedresp_edit_form extends question_edit_form {
             $categorylink = '<a href="' . $addcategoryurl . '" onclick="' . $onclick . '" target="addcategory">' . get_string('addcategory', 'qtype_programmedresp') . '</a>';
             $mform->addElement('html', '<div class="fitem"><div class="fitemtitle"></div><div class="felement">' . $categorylink . '<br/><br/></div></div>');
         }
-        
+
         // Function list
         $mform->addElement('html', '<div id="id_functioncategory_content">');
         if (!empty($this->question->id) && $this->question->options->function) {
@@ -156,7 +156,7 @@ class qtype_programmedresp_edit_form extends question_edit_form {
         // Arguments
         $mform->addElement('html', '<div id="id_programmedrespfid_content">');
         if (!empty($this->question->id) && $this->question->options->function) {
-            $outputmanager->display_args($this->question->options->function->id, 
+            $outputmanager->display_args($this->question->options->function->id,
                     $this->question->questiontext, $this->question->options->args,
                     $this->question->options->vars, $this->quizid);
         }
@@ -172,17 +172,17 @@ class qtype_programmedresp_edit_form extends question_edit_form {
                     'tolerancerelative', 'qtype_programmedresp'
             ),
         );
-        $mform->addElement('header', 'toleranceheader', 
+        $mform->addElement('header', 'toleranceheader',
                 get_string("tolerance", "qtype_programmedresp"));
         $mform->addElement('select', 'tolerancetype',
                 get_string("tolerancetype", "qtype_programmedresp"), $tolerancetypes);
-        $mform->addElement('text', 'tolerance', 
+        $mform->addElement('text', 'tolerance',
                 get_string("tolerance", "qtype_programmedresp"));
-        
+
         $mform->addRule('tolerance', null, 'required', null, 'client');
         $mform->addRule('tolerance', null, 'numeric', null, 'client');
         $mform->setType('tolerance', PARAM_NUMBER);
-        
+
 //        $mform->removeElement('generalfeedback');
 //        $mform->addElement('hidden', 'generalfeedback');
 //        $mform->setType('generalfeedback', PARAM_RAW);
@@ -203,7 +203,7 @@ class qtype_programmedresp_edit_form extends question_edit_form {
      * @return object $question the modified data.
      */
     protected function data_preprocessing($question) {
-
+        $question = $this->data_preprocessing_hints($question);
         if (!empty($question->id)) {
             // Variables
             $vars = programmedresp_preprocess_vars($question->options->vars);
@@ -211,6 +211,7 @@ class qtype_programmedresp_edit_form extends question_edit_form {
 
             // Function
             $question->functioncategory = $question->options->function->programmedrespfcatid;
+            $question->programmedrespfid = $question->options->function->id;
 
             // Function responses
             foreach ($question->options->responses as $returnkey => $resp) {

@@ -2,7 +2,7 @@
 
 /**
  * Manages the functions and categories of the system
- * 
+ *
  * @copyright 2010 David Monllaó <david.monllao@urv.cat>
  * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
  * @package qtype_programmedresp

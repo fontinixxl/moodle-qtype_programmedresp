@@ -12,14 +12,14 @@ function get_questiontext() {
 
     var questiontextvalue = false;
 
-    // Search for the question text vars 
+    // Search for the question text vars
     // http://moodle.org/mod/forum/discuss.php?d=16953
     if (window.frames.length > 0) {
         questiontextvalue = frames[0].document.body.innerHTML;
 
     } else if (document.getElementById("id_questiontexteditable")) {
         questiontextvalue = document.getElementById("id_questiontexteditable").innerHTML;
-        //for the extendedquiz 
+        //for the extendedquiz
     } else if (document.getElementById("id_introeditoreditable")) {
         questiontextvalue = document.getElementById("id_introeditoreditable").innerHTML;
     }
@@ -139,7 +139,7 @@ function display_args(element) {
                 if (concatelement.options[elementi].selected) {
                     concatstring += "&concatvar_" + i + "[]=" + concatelement.options[elementi].value;
                     concatstring += "&nconcatvar_" + i + "=" + concatname;
-                    
+
                 }
             }
         }

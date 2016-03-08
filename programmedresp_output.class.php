@@ -7,23 +7,22 @@
  * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
  * @package qtype_programmedresp
  */
-
 class prgrammedresp_output {
 
     var $mform;
-    
-    function prgrammedresp_output(&$mform){
-      $this->mform = $mform;
+
+    function prgrammedresp_output(&$mform) {
+        $this->mform = $mform;
     }
-     
+
       
     function add_concat_var($name, $vars, $values = false, $return = false, $readablename = false) {
 
-        if(!$readablename){
+        if (!$readablename) {
             $readablename = $name;
         }
-        
-        $concatdiv = '<input type="text" id="n'.$name.'" name="n'.$name.'" value="'.$readablename.'" ></br>';
+
+        $concatdiv = '<input type="text" id="n' . $name . '" name="n' . $name . '" value="' . $readablename . '" ></br>';
         $concatdiv.= '<select id="' . $name . '" name="' . $name . '[]" multiple="multiple">';
 
         // Marking the selected vars
@@ -58,7 +57,7 @@ class prgrammedresp_output {
      * @param array $quizconcatvars The already created guided quiz concat vars
      */
     function display_vars($questiontext = false, $args = false, $quizconcatvars = false) {
-        
+
         // If there aren't vars just notify it
         if (!$vars = programmedresp_get_question_vars($questiontext)) {
             $this->print_form_htmlraw('<span class="programmedresp_novars">' . get_string('novars', 'qtype_programmedresp') . '</span>');
@@ -134,8 +133,8 @@ class prgrammedresp_output {
 
         $attrs['onchange'] = 'return display_args(this);';
         $this->print_form_select(get_string('function', 'qtype_programmedresp'), 'programmedrespfid', $options, $attrs);
-    } 
-    
+    }
+
     /**
      * Prints form elements to assign vars / values to the selected function arguments
      * @param $functionid
@@ -145,7 +144,7 @@ class prgrammedresp_output {
      */
     function display_args($functionid, $questiontext = false, $args = false, $vars = false, $quizid = null) {
         global $DB;
-        
+
         if (!$functionid) {
             die();
         }
@@ -175,7 +174,7 @@ class prgrammedresp_output {
 
         // Get the linkerdesc vars only if a valid quizid is passed
         $linkervars = programmedresp_get_linkerdesc_vars($quizid);
-        
+
         $this->print_form_htmlraw('<br/><div class="programmedresp_functiondescription">' . stripslashes(format_text($functiondata->description, FORMAT_MOODLE)) . '</div>');
 
         // Assign arguments
@@ -227,7 +226,6 @@ class prgrammedresp_output {
             $linkervalue = '';
             $fixedclass = 'hidden_arg';
             $variableclass = 'hidden_arg';
-            // TODO: Change var name
             $linkerclass = 'hidden_arg';
             $concatclass = 'hidden_arg';
 
@@ -286,10 +284,9 @@ class prgrammedresp_output {
                     $paramelement.= '<option value="' . $varname . '" ' . $selectedstr . '>' . get_string("var", "qtype_programmedresp") . ' ' . $varvalue . '</option>';
                 }
                 $paramelement.= '</select>';
-
-                // Variables linker
             }
-            //TODO: si estem dins d'un quiz però no s'ha assignat pregunta linker, no tindrem variables. S'ha de notificar
+
+            // Linkerdesc variables
             if ($linkervars) {
                 $paramelement.= '<select name="linker_' . $key . '" id="id_argument_linker_' . $key . '" class="' . $linkerclass . '">';
                 foreach ($linkervars as $varid => $varname) {
@@ -300,8 +297,12 @@ class prgrammedresp_output {
                     $paramelement.= '<option value="' . $varid . '" ' . $selectedstr . '>' . $varname . '</option>';
                 }
                 $paramelement.= '</select>';
+            } else {
+                // TODO: If we are inside a quiz context without linkerdesc question,
+                // we should notify that there won't be linker vars.
             }
 
+            // Review if this span is already needed.
             $paramelement.= '<span  id="id_argument_linker_' . $key . '" class="' . $linkerclass . '"></span><input type="hidden" name="linker' . $key . '" value=""/>';
             $this->print_form_htmlraw('<div class="felement fselect">' . $paramelement . '</div></div>');
         }
@@ -342,8 +343,6 @@ class prgrammedresp_output {
 
     function print_form_text($title, $elementname, $value = '', $attrs = false) {
         $this->mform->addElement('text', $elementname, $title, $attrs);
-        // TODO: millorar. Cal detectar el tipus de parametre. Tal com esta ara tot
-        // ho evaluem com a float
         $this->mform->setType($elementname, PARAM_FLOAT);
         $this->mform->setDefault($elementname, $value);
     }

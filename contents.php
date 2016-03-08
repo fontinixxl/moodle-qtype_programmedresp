@@ -2,7 +2,7 @@
 
 /**
  * Manages the different AJAX petitions
- * 
+ *
  * @copyright 2010 David Monllaó <david.monllao@urv.cat>
  * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
  * @package qtype_programmedresp
@@ -37,7 +37,6 @@ switch ($action) {
     // Function arguments
     case 'displayargs' :
         $functionid = optional_param('function', false, PARAM_INT);
-        // TODO: passar-li quiz id
         $outputmanager->display_args($functionid);
         break;
 

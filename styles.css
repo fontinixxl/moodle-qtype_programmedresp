@@ -39,7 +39,7 @@
 }
 
 /*EDITING QUESTION*/
-.programmedresp_functiondescription { 
+.programmedresp_functiondescription {
     border-style: solid;
     border-color: #0070A8;
     width: 650px;
@@ -59,6 +59,6 @@
 
 .que.programmedresp .programmedresp_novars {
     padding: 10px;
-    
+
 }
 

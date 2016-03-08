@@ -342,7 +342,6 @@ function programmedresp_check_datarootfile() {
     global $CFG;
 
     $file = $CFG->dataroot . '/qtype_programmedresp.php';
-    //echo ("file = ".$file);
     // Creating a new file
     if (!file_exists($file)) {
         if (!$fh = fopen($file, 'w')) {
@@ -378,28 +377,13 @@ function programmedresp_check_base_functions_category() {
 }
 
 /**
- * Returns the module in use
- * @todo Improve the module detection
- * @return string
- */
-function programmedresp_get_modname() {
-
-    if (strstr($_SERVER['SCRIPT_FILENAME'], 'extendedquiz') != false) {
-        return 'extendedquiz';
-    } else {
-        return 'quiz';
-    }
-}
-
-/**
  * Returns the quiz
- * @param integer $attemptid
- * @param string $modname
- * @return integer The quiz of the attempt
+ * @param integer $usageid
+ * @return integer quiz id
  */
-function programmedresp_get_quizid($attemptid, $modname) {
+function programmedresp_get_quizid($usageid) {
     global $DB;
-    return $DB->get_field($modname . '_attempts', 'quiz', array('uniqueid' => $attemptid));
+    return $DB->get_field('quiz_attempts', 'quiz', array('uniqueid' => $usageid));
 }
 
 /**
@@ -433,10 +417,10 @@ function programmedresp_round($result, $tolerance) {
 
 /**
  * Store vars and concatvars from question text.
- * 
+ *
  * @uses qtype_programmedresp questiontype.php
  * @uses qtype_linkerdesc questiontype.php
- * @param array $vars with all vars 
+ * @param array $vars with all vars
  * @return array with new record id from programmedresp_var table.
  */
 function programmedresp_store_vars($vars, $questionid) {
@@ -459,14 +443,14 @@ function programmedresp_store_vars($vars, $questionid) {
             }
         }
     }
-    
+
     return $vars;
 }
 
 /**
- * Check if qtype_linkerdesc is installed.
- * 
- * @return bool 
+ * Check if qtype linkerdesc is installed.
+ *
+ * @return bool
  */
 function is_qtype_linkerdesc_installed() {
     return question_bank::is_qtype_installed('linkerdesc');
@@ -475,13 +459,13 @@ function is_qtype_linkerdesc_installed() {
 /**
  * Get all variables (vars and concatvars) from all qtype_linkerdesc
  * added in the given quiz (id).
- * 
+ *
  * @param type $quizid
  * @return array $linkeroptions
  */
 function programmedresp_get_linkerdesc_vars($quizid) {
     global $DB;
-    
+
     if (empty($quizid)) {
         return false;
     }
@@ -504,13 +488,13 @@ function programmedresp_get_linkerdesc_vars($quizid) {
             $linkeroptions['concatvar_' . $var->id] = $var->readablename . ' (' . get_string('vartypeconcatvar', 'qtype_programmedresp') . ')';
         }
     }
-    
+
     return $linkeroptions;
 }
 
 /**
  * Get the quiz id from cmid
- * 
+ *
  * @param type $cmid
  * @return type
  */
@@ -518,20 +502,20 @@ function programmedresp_getquiz_from_cm($cmid) {
     if (!$cmid) {
         $cmid = optional_param('cmid', 0, PARAM_INT);
     }
-    
+
     list($module, $cmrec) = get_module_from_cmid($cmid);
-    
+
     if ($cmrec->modname != 'quiz') {
         // TODO: add translation string
         print_error('Invalid course module!');
     }
-    
+
     return $module->id;
 }
 
 /**
  * Prepare vars to be restored on edit form.
- * 
+ *
  * @param array $vars loaded from DB
  * @return \stdClass
  */
