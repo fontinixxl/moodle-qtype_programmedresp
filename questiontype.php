@@ -121,9 +121,9 @@ class qtype_programmedresp extends question_type {
                 array('question' => $question->id));
 
         // If we are updating, they will be reinserted
-        $DB->delete_records('qtype_programmedresp_resp',
-                array('programmedrespid' => $programmedresp->id));
-
+        if (!empty($programmedresp->id)) {
+            $DB->delete_records('qtype_programmedresp_resp', array('programmedrespid' => $programmedresp->id));
+        }
         $argtypesmapping = programmedresp_get_argtypes_mapping();
         $i = 0;
         $vars = $args = $concatvars = array();

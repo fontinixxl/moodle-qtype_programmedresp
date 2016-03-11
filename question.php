@@ -85,7 +85,7 @@ class qtype_programmedresp_question extends question_graded_automatically {
             }
             $valuetodisplay = implode(', ', $values);
             str_replace('{$' . $var->varname . '}', $valuetodisplay, $this->questiontext, $count);
-            // If $var->varname is found in questiontext ($count == true) store it
+            // If $var->varname is found in questiontext ($count == true), then store it
             $count && $step->set_qt_var('_var_' . $var->id, $valuetodisplay);
         }
     }
