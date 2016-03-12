@@ -1,4 +1,5 @@
 <?php
+
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -22,10 +23,7 @@
  * @copyright  THEYEAR Gerard Cuello (<gerard.urv@gmail.com>)
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-
-
 defined('MOODLE_INTERNAL') || die();
-
 
 /**
  * Upgrade code for the programmedresp question type.
@@ -39,16 +37,11 @@ function xmldb_qtype_programmedresp_upgrade($oldversion) {
 
     // Moodle v2.2.0 release upgrade line
     // Put any upgrade step following this
-
     // Moodle v2.3.0 release upgrade line
     // Put any upgrade step following this
-
-
     // Moodle v2.4.0 release upgrade line
     // Put any upgrade step following this
 
 
     return true;
 }
-
-

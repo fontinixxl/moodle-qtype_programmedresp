@@ -12,14 +12,14 @@ function get_questiontext() {
 
     var questiontextvalue = false;
 
-    // Search for the question text vars 
+    // Search for the question text vars
     // http://moodle.org/mod/forum/discuss.php?d=16953
     if (window.frames.length > 0) {
         questiontextvalue = frames[0].document.body.innerHTML;
 
     } else if (document.getElementById("id_questiontexteditable")) {
         questiontextvalue = document.getElementById("id_questiontexteditable").innerHTML;
-        //for the extendedquiz 
+        //for the extendedquiz
     } else if (document.getElementById("id_introeditoreditable")) {
         questiontextvalue = document.getElementById("id_introeditoreditable").innerHTML;
     }
@@ -47,23 +47,18 @@ function get_next_concat_num() {
     return maxconcatnum;
 }
 
-function display_vars(element, edit, displayfunctionbutton) {
+function display_vars(element, edit) {
     callerelement = element;
 
     if (edit != undefined) {
         editing = edit;
     }
 
-    var functionbuttonstr = '';
-    if (displayfunctionbutton) {//if is True
-        functionbuttonstr = '&displayfunctionbutton=true';
-    }
-
     var varsheader = document.getElementById("id_varsheader");
     varsheader.style.visibility = "visible";
     varsheader.style.display = "block";
 
-    var fheader = document.getElementById("id_functionheader")
+    var fheader = document.getElementById("id_functionheader");
     if(fheader){    //programmed resp edit
         fheader.style.visibility = "visible";
         fheader.style.display = "block";
@@ -76,7 +71,7 @@ function display_vars(element, edit, displayfunctionbutton) {
 
     // Stripping garbage, we only want vars as much as we can
     questiontextvalue = questiontextvalue.replace(questiontextregexpfilter, " ");
-    display_section("action=displayvars" + functionbuttonstr + "&questiontext=" + questiontextvalue); //params
+    display_section("action=displayvars" + "&questiontext=" + questiontextvalue); //params
 }
 
 function functionsection_visible() {
@@ -144,7 +139,7 @@ function display_args(element) {
                 if (concatelement.options[elementi].selected) {
                     concatstring += "&concatvar_" + i + "[]=" + concatelement.options[elementi].value;
                     concatstring += "&nconcatvar_" + i + "=" + concatname;
-                    
+
                 }
             }
         }
@@ -158,7 +153,7 @@ function display_args(element) {
     questiontextvalue = questiontextvalue.replace(questiontextregexpfilter, " ");
 
     // function id + question text to extract the vars + the concatenated vars created
-    return display_section("action=displayargs&function=" + functionid + "&questiontext=" + questiontextvalue + concatstring);
+    return display_section("action=displayargs&function=" + functionid + "&questiontext=" + questiontextvalue + concatstring + "&quizid=" + quizid);
 }
 
 
@@ -182,6 +177,7 @@ function display_section(params) {
             };
 
     dir = wwwroot + "/question/type/programmedresp/contents.php";
+    console.log(params);
     YUI().use('yui2-connection', function(Y) {
         Y.YUI2.util.Connect.asyncRequest('POST', dir, callbackHandler, params);
     });
@@ -253,7 +249,7 @@ function add_concat_var() {
             };
 
     var params = "action=addconcatvar&concatnum=" + concatnum + varsstring;
-
+    console.log(params);
     dir = wwwroot + "/question/type/programmedresp/contents.php";
     YUI().use('yui2-connection', function(Y) {
         Y.YUI2.util.Connect.asyncRequest('POST', dir, callbackHandler, params);
@@ -311,13 +307,16 @@ function cancel_concat_var(concatid) {
 
 function change_argument_type(element, argumentkey) {
 
-    var types = new Array('fixed', 'variable', 'guidedquiz', 'concat');
+    var types = new Array('fixed', 'variable', 'linker', 'concat');
     var tmpelement;
 
     for (var i = 0; i < types.length; i++) {
 
         tmpelement = document.getElementById("id_argument_" + types[i] + "_" + argumentkey);
-
+        // if there aren't "variable" elements, we must skip it to avoid javascript errors
+        if (tmpelement === null) {
+            continue;
+        }
         if (element.value == i) {
             tmpelement.style.visibility = "visible";
             tmpelement.style.display = "inline";

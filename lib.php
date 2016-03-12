@@ -31,7 +31,7 @@ define('PROGRAMMEDRESP_RESPONSEFORMAT_SIGNIFICATIVE', 2);
 
 define('PROGRAMMEDRESP_ARG_FIXED', 0);
 define('PROGRAMMEDRESP_ARG_VARIABLE', 1);
-define('PROGRAMMEDRESP_ARG_EXTENDEDQUIZ', 2);
+define('PROGRAMMEDRESP_ARG_LINKER', 2);
 define('PROGRAMMEDRESP_ARG_CONCAT', 3);
 
 /**
@@ -162,7 +162,7 @@ function programmedresp_get_argtypes_mapping() {
     return array(PROGRAMMEDRESP_ARG_FIXED => 'fixed',
         PROGRAMMEDRESP_ARG_VARIABLE => 'variable',
         PROGRAMMEDRESP_ARG_CONCAT => 'concat',
-        PROGRAMMEDRESP_ARG_EXTENDEDQUIZ => 'extendedquiz');
+        PROGRAMMEDRESP_ARG_LINKER => 'linker');
 }
 
 /**
@@ -261,7 +261,7 @@ function programmedresp_get_function_code($functionname) {
     if (count($partend) < 2) {
         $code = $searchedstring . ' ' . $parts[1];
 
-        // Any function other than the last one
+    // Any function other than the last one
     } else {
         $code = $searchedstring . ' ' . $partend[0];
     }
@@ -307,7 +307,7 @@ function programmedresp_unserialize($var) {
 
     $var = str_replace('\"', '"', $var);
     $var = unserialize($var);
-    
+
     return $var;
 }
 
@@ -342,7 +342,6 @@ function programmedresp_check_datarootfile() {
     global $CFG;
 
     $file = $CFG->dataroot . '/qtype_programmedresp.php';
-    //echo ("file = ".$file);
     // Creating a new file
     if (!file_exists($file)) {
         if (!$fh = fopen($file, 'w')) {
@@ -378,28 +377,13 @@ function programmedresp_check_base_functions_category() {
 }
 
 /**
- * Returns the module in use
- * @todo Improve the module detection
- * @return string
- */
-function programmedresp_get_modname() {
-
-    if (strstr($_SERVER['SCRIPT_FILENAME'], 'extendedquiz') != false) {
-        return 'extendedquiz';
-    } else {
-        return 'quiz';
-    }
-}
-
-/**
  * Returns the quiz
- * @param integer $attemptid
- * @param string $modname
- * @return integer The quiz of the attempt
+ * @param integer $usageid
+ * @return integer quiz id
  */
-function programmedresp_get_quizid($attemptid, $modname) {
+function programmedresp_get_quizid($usageid) {
     global $DB;
-    return $DB->get_field($modname . '_attempts', 'quiz', array('uniqueid' => $attemptid));
+    return $DB->get_field('quiz_attempts', 'quiz', array('uniqueid' => $usageid));
 }
 
 /**
@@ -429,4 +413,122 @@ function programmedresp_round($result, $tolerance) {
     }
 
     return $result;
+}
+
+/**
+ * Store vars and concatvars from question text.
+ *
+ * @uses qtype_programmedresp questiontype.php
+ * @uses qtype_linkerdesc questiontype.php
+ * @param array $vars with all vars
+ * @return array with new record id from programmedresp_var table.
+ */
+function programmedresp_store_vars($vars, $questionid) {
+    global $DB;
+    foreach ($vars as $varname => $var) {
+        $var->question = $questionid;
+        $var->varname = $varname;
+
+        // Update
+        if ($var->id = $DB->get_field('qtype_programmedresp_var', 'id', array('question' => $var->question, 'varname' => $var->varname))) {
+
+            if (!$DB->update_record('qtype_programmedresp_var', $var)) {
+                print_error('errordb', 'qtype_programmedresp');
+            }
+
+        // Insert
+        } else {
+            if (!$vars[$varname]->id = $DB->insert_record('qtype_programmedresp_var', $var)) {
+                print_error('errordb', 'qtype_programmedresp');
+            }
+        }
+    }
+
+    return $vars;
+}
+
+/**
+ * Check if qtype linkerdesc is installed.
+ *
+ * @return bool
+ */
+function is_qtype_linkerdesc_installed() {
+    return question_bank::is_qtype_installed('linkerdesc');
+}
+
+/**
+ * Get all variables (vars and concatvars) from all qtype_linkerdesc
+ * added in the given quiz (id).
+ *
+ * @param type $quizid
+ * @return array $linkeroptions
+ */
+function programmedresp_get_linkerdesc_vars($quizid) {
+    global $DB;
+
+    if (empty($quizid)) {
+        return false;
+    }
+
+    // Get ids of the questions linked with the given quiz id
+    $qinquiz = $DB->get_records('qtype_linkerdesc_quiz', array('quiz' => $quizid), 'id', 'question');
+    // likerdesc vars
+    $linkervars = $DB->get_records_list('qtype_programmedresp_var', 'question', array_keys($qinquiz));
+    // linkerdesc concatvars
+    $linkerconcatvars = $DB->get_records_list('qtype_programmedresp_conc', 'question', array_keys($qinquiz));
+
+    $linkeroptions = array();
+    // Preprocess quiz vars -> options
+    foreach ($linkervars as $linkervar) {
+        $linkeroptions['var_' . $linkervar->id] = $linkervar->varname . ' (' . get_string('vartypevar', 'qtype_programmedresp') . ')';
+    }
+    // Now the concat vars
+    if ($linkerconcatvars) {
+        foreach ($linkerconcatvars as $var) {
+            $linkeroptions['concatvar_' . $var->id] = $var->readablename . ' (' . get_string('vartypeconcatvar', 'qtype_programmedresp') . ')';
+        }
+    }
+
+    return $linkeroptions;
+}
+
+/**
+ * Get the quiz id from cmid
+ *
+ * @param type $cmid
+ * @return type
+ */
+function programmedresp_getquiz_from_cm($cmid) {
+    if (!$cmid) {
+        $cmid = optional_param('cmid', 0, PARAM_INT);
+    }
+
+    list($module, $cmrec) = get_module_from_cmid($cmid);
+
+    if ($cmrec->modname != 'quiz') {
+        // TODO: add translation string
+        print_error('Invalid course module!');
+    }
+
+    return $module->id;
+}
+
+/**
+ * Prepare vars to be restored on edit form.
+ *
+ * @param array $vars loaded from DB
+ * @return \stdClass
+ */
+function programmedresp_preprocess_vars($vars) {
+    $toform = new stdClass();
+    $varfields = programmedresp_get_var_fields();
+    foreach ($vars as $var) {
+        foreach (array_keys($varfields) as $varfield) {
+            $fieldname = 'var_' . $varfield . '_' . $var->varname;
+            // Little hack to remove useless zero digits from decimals
+            // http://stackoverflow.com/questions/14531679/remove-useless-zero-digits-from-decimals-in-php
+            $toform->{$fieldname} = $var->{$varfield} + 0;
+        }
+    }
+    return $toform;
 }

@@ -2,7 +2,7 @@
 
 /**
  * Manages the different AJAX petitions
- * 
+ *
  * @copyright 2010 David Monllaó <david.monllao@urv.cat>
  * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
  * @package qtype_programmedresp
@@ -10,19 +10,22 @@
 require_once('../../../config.php');
 require_once($CFG->dirroot . '/question/type/programmedresp/lib.php');
 require_once($CFG->dirroot . '/question/type/programmedresp/programmedresp_output_ajax.class.php');
+require_once($CFG->dirroot . '/question/editlib.php');
+
+
 
 $action = optional_param('action', false, PARAM_ALPHAEXT);
 if (!$action) {
     die();
 }
+global $DB, $PAGE;
 
 $outputmanager = new programmedresp_output_ajax($mform);
 switch ($action) {
 
     // Question text vars
     case 'displayvars' :
-        $displayfunctionbutton = optional_param('displayfunctionbutton', true, PARAM_INT);
-        $outputmanager->display_vars(false, false, $displayfunctionbutton);
+        $outputmanager->display_vars(false, false);
         break;
 
     // Functions <select>

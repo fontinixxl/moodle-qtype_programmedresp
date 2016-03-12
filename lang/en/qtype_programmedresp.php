@@ -16,7 +16,7 @@
     $string['answer'] = 'Answer: {$a}';
     $string['argconcat'] = 'Concatenated variable';
     $string['argfixed'] = 'Fixed';
-    $string['argextendedquiz'] = 'Extended quiz';
+    $string['arglinker'] = 'Linker variable';
     $string['argvariable'] = 'Variable';
     $string['assignfunction'] = 'Assign function';
     $string['assignvarsvalues'] = 'Assign variables values';
@@ -57,6 +57,7 @@
     $string['programmedresp'] = 'Programmed response';
     $string['programmedrespsummary'] = 'Questions which response are calculated through a function';
     $string['headervars'] = 'Variables values';
+    $string['linkervar'] = 'Linker';
     $string['maximum'] = 'Maximum';
     $string['minimum'] = 'Minimum';
     $string['nonumeric'] = '    You must enter a number here';
@@ -69,6 +70,7 @@
     $string['parentcategory'] = 'Parent category';
     $string['pluginname'] = 'Programmed responses';
     //new QTypeEngine
+    $string['pluginname_help'] = 'TODO: Description about this qtype';
     $string['pluginname_link'] = 'question/type/programmedresp';
     $string['pluginnameadding'] = 'Adding a programmedresp question';
     $string['pluginnameediting'] = 'Editing a programmedresp question';
@@ -92,5 +94,7 @@
     $string['valueincrement'] = 'Increment';
     $string['var'] = 'Variable';
     $string['varsvalues'] = 'Variables values';
+    $string['vartypevar'] = 'variable';
+    $string['vartypeconcatvar'] = 'concat variable';
     
     

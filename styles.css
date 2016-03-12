@@ -2,6 +2,7 @@
     height:auto;
 }
 
+
 .que.programmedresp .answer .specificfeedback {
     display: inline;
     padding: 0 0.7em;
@@ -38,7 +39,7 @@
 }
 
 /*EDITING QUESTION*/
-.programmedresp_functiondescription { 
+.programmedresp_functiondescription {
     border-style: solid;
     border-color: #0070A8;
     width: 650px;
@@ -51,13 +52,13 @@
     display: none;
 }
 
-.hidden_arg {
+#page-question-type-programmedresp .hidden_arg {
     visibility: hidden;
     display: none;
 }
 
-.programmedresp_novars {
+.que.programmedresp .programmedresp_novars {
     padding: 10px;
-    
+
 }
 
