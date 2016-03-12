@@ -440,9 +440,9 @@ class qtype_programmedresp_question extends question_graded_automatically {
             case PROGRAMMEDRESP_ARG_LINKER:
                 // Getting the argument variable
                 $sql = "SELECT *
-                          FROM {qtype_linkerdesc_var_arg} lva
-                         WHERE lva.quizid = ?
-                           AND lva.programmedrespargid = ? ";
+                          FROM {qtype_programmedresp_v_arg} pva
+                         WHERE pva.quizid = ?
+                           AND pva.programmedrespargid = ? ";
 
                 if (!$vardata = $DB->get_record_sql($sql, array($quizid, $arg->id))) {
                     print_error('errorargumentnoassigned', 'qtype_programmedresp');

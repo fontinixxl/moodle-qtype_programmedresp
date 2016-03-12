@@ -34,6 +34,8 @@ define('PROGRAMMEDRESP_ARG_VARIABLE', 1);
 define('PROGRAMMEDRESP_ARG_LINKER', 2);
 define('PROGRAMMEDRESP_ARG_CONCAT', 3);
 
+define('NO_CONTEXT_QUIZ', -1);
+
 /**
  * Checks file access for programmedresp questions.
  * @package  qtype_programmedresp
@@ -457,32 +459,38 @@ function is_qtype_linkerdesc_installed() {
 }
 
 /**
- * Get all variables (vars and concatvars) from all qtype_linkerdesc
- * added in the given quiz (id).
+ * Get all qtype_linkerdesc variables (vars and concatvars) from
+ * the current quiz.
  *
- * @param type $quizid
- * @return array $linkeroptions
+ * @param int $quizid of the quiz where we are in.
+ * @return false|array linkervars belonging to this quiz.
  */
 function programmedresp_get_linkerdesc_vars($quizid) {
     global $DB;
 
-    if (empty($quizid)) {
+    if ($quizid === NO_CONTEXT_QUIZ) {
         return false;
     }
 
-    // Get ids of the questions linked with the given quiz id
-    $qinquiz = $DB->get_records('qtype_linkerdesc_quiz', array('quiz' => $quizid), 'id', 'question');
-    // likerdesc vars
+    // 1-> Get all qtype_linkerdesc questions belonging to the current quiz.
+    $qinquiz = $DB->get_records_sql("
+        SELECT qs.questionid
+          FROM {quiz_slots} as qs
+          JOIN {question} q
+            ON qs.questionid = q.id
+         WHERE qs.quizid = ?
+           AND q.qtype = 'linkerdesc'", array($quizid));
+
+    // 2-> Get all linkerdesc variables.
     $linkervars = $DB->get_records_list('qtype_programmedresp_var', 'question', array_keys($qinquiz));
-    // linkerdesc concatvars
+    // 3-> Get all linkerdesc concatenated variables.
     $linkerconcatvars = $DB->get_records_list('qtype_programmedresp_conc', 'question', array_keys($qinquiz));
 
+    // 4-> Join vars and concatvars to be returned all together.
     $linkeroptions = array();
-    // Preprocess quiz vars -> options
     foreach ($linkervars as $linkervar) {
         $linkeroptions['var_' . $linkervar->id] = $linkervar->varname . ' (' . get_string('vartypevar', 'qtype_programmedresp') . ')';
     }
-    // Now the concat vars
     if ($linkerconcatvars) {
         foreach ($linkerconcatvars as $var) {
             $linkeroptions['concatvar_' . $var->id] = $var->readablename . ' (' . get_string('vartypeconcatvar', 'qtype_programmedresp') . ')';
@@ -496,7 +504,7 @@ function programmedresp_get_linkerdesc_vars($quizid) {
  * Get the quiz id from cmid
  *
  * @param type $cmid
- * @return type
+ * @return false|int false if it isn't a quiz module
  */
 function programmedresp_getquiz_from_cm($cmid) {
     if (!$cmid) {
@@ -506,8 +514,7 @@ function programmedresp_getquiz_from_cm($cmid) {
     list($module, $cmrec) = get_module_from_cmid($cmid);
 
     if ($cmrec->modname != 'quiz') {
-        // TODO: add translation string
-        print_error('Invalid course module!');
+        return false;
     }
 
     return $module->id;

@@ -37,17 +37,22 @@ require_once($CFG->dirroot . '/question/type/programmedresp/programmedresp_outpu
  */
 class qtype_programmedresp_edit_form extends question_edit_form {
 
+    /**
+     *
+     * @var int default to -1 to indicate which isn't in a quiz context.
+     */
     private $quizid;
 
     public function __construct($submiturl, $question, $category, $contexts, $formeditable = true) {
 
-        $installed = is_qtype_linkerdesc_installed();
+        $islinkerinstalled= is_qtype_linkerdesc_installed();
         $cmid = optional_param('cmid', 0, PARAM_INT);
 
-        // Conditions to get a valid quiz id:
-        //  - Qtype_linkerdesc question must be installed.
-        //  - Valid course module must be submitted and it must be a 'quiz' activity.
-        $installed && $cmid && ($this->quizid = programmedresp_getquiz_from_cm($cmid));
+        // Initialize quiz id with:
+        //  > '-1' to indicate we aren't in a quiz context or :
+        //  > valid quiz id from course module (cm).
+        $islinkerinstalled && $cmid && ($id = programmedresp_getquiz_from_cm($cmid));
+        $this->quizid = (empty($id)) ? NO_CONTEXT_QUIZ : $id;
 
         // TODO: provar d'afegir el quizid a $question: $question->quizid = quizid;
         parent::__construct($submiturl, $question, $category, $contexts, $formeditable);

@@ -283,11 +283,11 @@ class qtype_programmedresp extends question_type {
                 if (!empty($linkervararg[$argkey]) && $arg->type == PROGRAMMEDRESP_ARG_LINKER) {
                     $linkervararg[$argkey]->programmedrespargid = $arg->id;
 
-                    if ($linkervararg[$argkey]->id = $DB->get_field('qtype_linkerdesc_var_arg', 'id', array(
+                    if ($linkervararg[$argkey]->id = $DB->get_field('qtype_programmedresp_v_arg', 'id', array(
                         'quizid' => $question->quizid, 'programmedrespargid' => $arg->id))) {
-                        $DB->update_record('qtype_linkerdesc_var_arg', $linkervararg[$argkey]);
+                        $DB->update_record('qtype_programmedresp_v_arg', $linkervararg[$argkey]);
                     } else {
-                        $DB->insert_record('qtype_linkerdesc_var_arg', $linkervararg[$argkey]);
+                        $DB->insert_record('qtype_programmedresp_v_arg', $linkervararg[$argkey]);
                     }
                 }
             }

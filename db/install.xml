@@ -127,5 +127,18 @@
                 <INDEX NAME="question" UNIQUE="false" FIELDS="question"/>
             </INDEXES>
         </TABLE>
+        <TABLE NAME="qtype_programmedresp_v_arg" COMMENT="Stores the programmedresp question arguments value of linkerdesc variables">
+            <FIELDS>
+                <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+                <FIELD NAME="quizid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+                <FIELD NAME="type" TYPE="char" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="'var' or' concatvar'"/>
+                <FIELD NAME="instanceid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="Depends on the type field, it could point to qtype_programmedresp_var or to qtype_programmedresp_conc."/>
+                <FIELD NAME="programmedrespargid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+            </FIELDS>
+            <KEYS>
+                <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+                <KEY NAME="programmedrespargid" TYPE="foreign" FIELDS="programmedrespargid" REFTABLE="qtype_programmedresp_arg" REFFIELDS="id"/>
+            </KEYS>
+        </TABLE>
     </TABLES>
 </XMLDB>
