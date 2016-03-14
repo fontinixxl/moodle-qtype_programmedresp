@@ -151,7 +151,7 @@ class qtype_programmedresp_question extends question_graded_automatically {
      */
     public function get_expected_data() {
         $expected = array();
-        foreach ($this->expectedresps as $resp) {
+        foreach ($this->respfields as $resp) {
             $expected[$this->field($resp->returnkey)] = PARAM_RAW_TRIMMED;
         }
         return $expected;
@@ -163,10 +163,11 @@ class qtype_programmedresp_question extends question_graded_automatically {
      * @return string the message.
      */
     public function get_validation_error(array $response) {
-        if ($this->is_gradable_response($response)) {
-            return '';
+        if (!$this->is_gradable_response($response)) {
+            return get_string('pleaseenterananswer', 'qtype_numerical');
         }
-        return get_string('pleaseselectatleastoneanswer', 'qtype_multichoice');
+        // TODO: add validation for thousands separators
+        return '';
     }
 
     /**
@@ -183,7 +184,7 @@ class qtype_programmedresp_question extends question_graded_automatically {
             return null;
         }
         $response = array();
-        foreach ($this->expectedresps as $expectedresp) {
+        foreach ($this->respfields as $respfield) {
             $response[$this->field($resp->returnkey)] = $this->answers[$resp->returnkey]->answer;
         }
 
@@ -199,9 +200,20 @@ class qtype_programmedresp_question extends question_graded_automatically {
         return array();
     }
 
+    /**
+     * Use by many of the behaviours to determine whether the student
+     * has provided enough of an answer for the question to be graded automatically,
+     * or whether it must be considered aborted.
+     *
+     * @param array $response responses, as returned by
+     *      {@link question_attempt_step::get_qt_data()}.
+     * @return bool whether this response can be graded.
+     */
     public function is_gradable_response(array $response) {
-        foreach ($this->expectedresps as $expectedresp) {
-            if (empty($response[$this->field($expectedresp->returnkey)])) {
+        foreach ($this->respfields as $respfield) {
+            $respindex = $this->field($respfield->returnkey);
+            if (!array_key_exists($respindex, $response) ||
+                    ($response[$respindex] === '' || is_null($response[$respindex]))) {
                 return false;
             }
         }
@@ -222,6 +234,7 @@ class qtype_programmedresp_question extends question_graded_automatically {
         if (!$this->is_gradable_response($response)) {
             return false;
         }
+
         // TODO: Add some extra testing cases like thousands separator
         // See {@link qtype_numerical_question::is_complete_response}
         return true;
@@ -241,9 +254,6 @@ class qtype_programmedresp_question extends question_graded_automatically {
         $nresponses = 0;
         foreach ($this->answers as $index => $answerobj) {
 
-            if (empty($response[$this->field($index)])) {
-                $response[$this->field($index)] = '';
-            }
             $this->answers[$index]->fraction = $this->test_programmed_response($answerobj->answer, $response[$this->field($index)]);
 
             $fractions[] = $this->answers[$index]->fraction;
@@ -263,7 +273,8 @@ class qtype_programmedresp_question extends question_graded_automatically {
      * @return type
      */
     public function get_matching_answer($useranswer, $answernum) {
-        return $this->test_programmed_response($useranswer, $this->answers[$answernum]->answer);
+        return $this->test_programmed_response($this->answers[$answernum]->answer, $useranswer);
+
     }
 
     /**
@@ -283,9 +294,8 @@ class qtype_programmedresp_question extends question_graded_automatically {
         if ($result === 0 && $response == '') {
             return 1;
         }
-
         // If it's not an integer nor a float it's a string
-        if (!programmedresp_is_numeric($response)) {
+        if (!is_numeric($response)) {
             // strval() vs strval() has been previously tested
             return 0;
         }
@@ -318,8 +328,8 @@ class qtype_programmedresp_question extends question_graded_automatically {
      *      whether the new set of responses can safely be discarded.
      */
     public function is_same_response(array $prevresponse, array $newresponse) {
-        foreach ($this->expectedresps as $expectedresp) {
-            $fieldname = $this->field($expectedresp->returnkey);
+        foreach ($this->respfields as $respfield) {
+            $fieldname = $this->field($respfield->returnkey);
             if (!question_utils::arrays_same_at_key($prevresponse, $newresponse, $fieldname)) {
                 return false;
             }
@@ -440,9 +450,9 @@ class qtype_programmedresp_question extends question_graded_automatically {
             case PROGRAMMEDRESP_ARG_LINKER:
                 // Getting the argument variable
                 $sql = "SELECT *
-                          FROM {qtype_linkerdesc_var_arg} lva
-                         WHERE lva.quizid = ?
-                           AND lva.programmedrespargid = ? ";
+                          FROM {qtype_programmedresp_v_arg} pva
+                         WHERE pva.quizid = ?
+                           AND pva.programmedrespargid = ? ";
 
                 if (!$vardata = $DB->get_record_sql($sql, array($quizid, $arg->id))) {
                     print_error('errorargumentnoassigned', 'qtype_programmedresp');

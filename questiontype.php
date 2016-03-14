@@ -43,6 +43,8 @@ class qtype_programmedresp extends question_type {
         return array('qtype_programmedresp', 'programmedrespfid', 'tolerancetype', 'tolerance');
     }
 
+    // TODO: delete this method because question_type already has defined it.
+    //  It suposes rename the primary key to 'questionid'
     function questionid_column_name() {
         return 'question';
     }
@@ -102,7 +104,7 @@ class qtype_programmedresp extends question_type {
         $question->args = $questiondata->options->args;
         $question->function = $questiondata->options->function;
         // Response options
-        $question->expectedresps = $questiondata->options->responses;
+        $question->respfields = $questiondata->options->responses;
     }
 
     /**
@@ -149,10 +151,7 @@ class qtype_programmedresp extends question_type {
                 // $argvalue contains the value of the selected var.
                 $argname = $argtypesmapping[intval($value)] . "_" . $argobj->argkey;
                 $argvalue = optional_param($argname, false, PARAM_ALPHANUMEXT);
-                // empty for linkerdesc arg context different from quiz module
-                $argobj->value = (!empty($argvalue))
-                        ? clean_param($argvalue, PARAM_TEXT)  // integer or float if it's fixed or a varname
-                        : '';
+                $argobj->value = clean_param($argvalue, PARAM_TEXT);  // integer or float if it's fixed or a varname
 
                 $args[$i] = $argobj;
                 $i++;
@@ -283,11 +282,11 @@ class qtype_programmedresp extends question_type {
                 if (!empty($linkervararg[$argkey]) && $arg->type == PROGRAMMEDRESP_ARG_LINKER) {
                     $linkervararg[$argkey]->programmedrespargid = $arg->id;
 
-                    if ($linkervararg[$argkey]->id = $DB->get_field('qtype_linkerdesc_var_arg', 'id', array(
+                    if ($linkervararg[$argkey]->id = $DB->get_field('qtype_programmedresp_v_arg', 'id', array(
                         'quizid' => $question->quizid, 'programmedrespargid' => $arg->id))) {
-                        $DB->update_record('qtype_linkerdesc_var_arg', $linkervararg[$argkey]);
+                        $DB->update_record('qtype_programmedresp_v_arg', $linkervararg[$argkey]);
                     } else {
-                        $DB->insert_record('qtype_linkerdesc_var_arg', $linkervararg[$argkey]);
+                        $DB->insert_record('qtype_programmedresp_v_arg', $linkervararg[$argkey]);
                     }
                 }
             }
@@ -311,6 +310,44 @@ class qtype_programmedresp extends question_type {
     public function move_files($questionid, $oldcontextid, $newcontextid) {
         parent::move_files($questionid, $oldcontextid, $newcontextid);
         $this->move_files_in_hints($questionid, $oldcontextid, $newcontextid);
+    }
+
+    public function delete_question($questionid, $contextid) {
+        global $DB;
+
+        if (!$programmedresp = $DB->get_record('qtype_programmedresp',
+                array('question' => $questionid))) {
+            return false;
+        }
+
+        // Delete all argument associations with global vars (linkerdesc).
+        if ($args = $DB->get_records('qtype_programmedresp_arg', array(
+            'programmedrespid' => $programmedresp->id, 'type' => PROGRAMMEDRESP_ARG_LINKER))) {
+            foreach ($args as $arg) {
+                $DB->delete_records('qtype_programmedresp_v_arg', array('programmedrespargid' => $arg->id));
+            }
+            // Once all linkerdesc association has been deleted.
+            $DB->delete_records('qtype_programmedresp_arg', array('programmedrespid' => $programmedresp->id));
+        }
+        // Delete responses
+        $DB->delete_records('qtype_programmedresp_resp', array('programmedrespid' => $programmedresp->id));
+
+        $vars = $DB->get_records('qtype_programmedresp_var', array('question' => $questionid));
+        if ($vars) {
+            foreach ($vars as $var) {
+                // Delete all random values for each variable.
+                $DB->delete_records('qtype_programmedresp_val', array('programmedrespvarid' => $var->id));
+            }
+            // Delete variables.
+            $DB->delete_records('qtype_programmedresp_var', array('question' => $questionid));
+
+            // Delete concatenated vars.
+            $DB->delete_records('qtype_programmedresp_conc', array('question' => $questionid));
+
+        }
+
+        // Parent method will be delete the extra question table.
+        parent::delete_question($questionid, $contextid);
     }
 
     protected function delete_files($questionid, $contextid) {

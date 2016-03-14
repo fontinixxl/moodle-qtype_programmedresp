@@ -15,7 +15,7 @@ class prgrammedresp_output {
         $this->mform = $mform;
     }
 
-      
+
     function add_concat_var($name, $vars, $values = false, $return = false, $readablename = false) {
 
         if (!$readablename) {
@@ -142,16 +142,22 @@ class prgrammedresp_output {
      * @param $args
      * @param $vars
      */
-    function display_args($functionid, $questiontext = false, $args = false, $vars = false, $quizid = null) {
+
+    /**
+     * Prints form elements to assign vars / values to the selected function arguments
+     *
+     * @param type $functionid
+     * @param type $questiontext
+     * @param type $args
+     * @param type $vars
+     * @param int $quizid a valid quiz id or '-1' to indicate we aren't in a quiz context.
+     * @return boolean
+     */
+    function display_args($functionid, $questiontext = false, $args = false, $vars = false, $quizid) {
         global $DB;
 
         if (!$functionid) {
             die();
-        }
-
-        if (!$quizid) {
-            // Try to get from Ajax call.
-            $quizid = optional_param('quizid', false, PARAM_INT);
         }
 
         // Function data
@@ -245,12 +251,8 @@ class prgrammedresp_output {
                     $concatclass = '';
                 } else if ($args[$key]->type == PROGRAMMEDRESP_ARG_LINKER && $linkervars) {
 
-                    $conditions = array(
-                        'quizid' => $quizid,
-                        'programmedrespargid' => $args[$key]->id,
-                    );
-
-                    $vararg = $DB->get_record('qtype_linkerdesc_var_arg', $conditions);
+                    $vararg = $DB->get_record('qtype_programmedresp_v_arg',
+                            array('quizid' => $quizid, 'programmedrespargid' => $args[$key]->id));
                     // assign the previous selected linkervar
                     $linkervalue = $linkervars[$vararg->type . '_' . $vararg->instanceid];
                     $linkerclass = '';

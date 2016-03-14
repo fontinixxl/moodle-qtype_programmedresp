@@ -37,7 +37,8 @@ switch ($action) {
     // Function arguments
     case 'displayargs' :
         $functionid = optional_param('function', false, PARAM_INT);
-        $outputmanager->display_args($functionid);
+        $quizid = required_param('quizid', PARAM_INT);
+        $outputmanager->display_args($functionid, false, false, false, $quizid);
         break;
 
     case 'addconcatvar' :

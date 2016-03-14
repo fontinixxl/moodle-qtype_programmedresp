@@ -63,8 +63,8 @@ class qtype_programmedresp_renderer extends qtype_renderer {
         $feedbackimg = array();
         $classes = array();
         $responses = array();
-        foreach ($question->expectedresps as $expectedresp) {
-            $respkey = $question->field($expectedresp->returnkey);
+        foreach ($question->respfields as $respfield) {
+            $respkey = $question->field($respfield->returnkey);
             $responses[$respkey] = $qa->get_last_qt_var($respkey);
             $name = $qa->get_qt_field_name($respkey);
 
@@ -81,21 +81,21 @@ class qtype_programmedresp_renderer extends qtype_renderer {
                 ));
             }
 
-            $class = 'r' . ($expectedresp->returnkey % 2);
+            $class = 'r' . ($respfield->returnkey % 2);
             if ($options->correctness) {
                 $fraction = $question->get_matching_answer($responses[$respkey],
-                        $expectedresp->returnkey);
+                        $respfield->returnkey);
                 if(!$fraction){
                     $fraction = 0;
                 }
-                $feedbackimg[$expectedresp->returnkey] = $this->feedback_image($fraction);
+                $feedbackimg[$respfield->returnkey] = $this->feedback_image($fraction);
                 $inputattributes['class'] = $this->feedback_class($fraction);
             } else {
-                $feedbackimg[$expectedresp->returnkey] = '';
+                $feedbackimg[$respfield->returnkey] = '';
             }
-            $classes[$expectedresp->returnkey] = $class;
+            $classes[$respfield->returnkey] = $class;
 
-            $inputs[$expectedresp->returnkey] = html_writer::tag('bel', $expectedresp->label,
+            $inputs[$respfield->returnkey] = html_writer::tag('bel', $respfield->label,
                     array('for' => $inputattributes['id'], 'class' => 'programmedresp')).
                     html_writer::empty_tag('input', $inputattributes);
 
@@ -139,8 +139,12 @@ class qtype_programmedresp_renderer extends qtype_renderer {
         $numdecimals =explode('.',$tolerance);
 
         $correctans = array();
-        foreach ($question->expectedresps as $expectedresp) {
-            $correctans[] = round($answers[$expectedresp->returnkey]->answer, strlen($numdecimals[1]));
+        foreach ($question->respfields as $respfield) {
+            $curranswer = $answers[$respfield->returnkey]->answer;
+            if (is_numeric($curranswer)) {
+                $curranswer = round($curranswer, strlen($numdecimals[1]));
+            }
+            $correctans[] = $curranswer;
         }
         if (!empty($correctans)) {
             return get_string('correctansweris', 'qtype_multichoice', implode(', ', $correctans));
