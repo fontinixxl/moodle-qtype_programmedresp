@@ -389,6 +389,7 @@ function programmedresp_get_quizid($usageid) {
 }
 
 /**
+ * TODO: It won't be needed.
  * Taking into account the dots
  * @param unknown_type $response
  * @return boolean

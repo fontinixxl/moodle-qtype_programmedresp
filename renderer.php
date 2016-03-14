@@ -140,7 +140,11 @@ class qtype_programmedresp_renderer extends qtype_renderer {
 
         $correctans = array();
         foreach ($question->expectedresps as $expectedresp) {
-            $correctans[] = round($answers[$expectedresp->returnkey]->answer, strlen($numdecimals[1]));
+            $curranswer = $answers[$expectedresp->returnkey]->answer;
+            if (is_numeric($curranswer)) {
+                $curranswer = round($curranswer, strlen($numdecimals[1]));
+            }
+            $correctans[] = $curranswer;
         }
         if (!empty($correctans)) {
             return get_string('correctansweris', 'qtype_multichoice', implode(', ', $correctans));

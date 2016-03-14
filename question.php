@@ -201,7 +201,7 @@ class qtype_programmedresp_question extends question_graded_automatically {
 
     public function is_gradable_response(array $response) {
         foreach ($this->expectedresps as $expectedresp) {
-            if (empty($response[$this->field($expectedresp->returnkey)])) {
+            if (!isset($response[$this->field($expectedresp->returnkey)])) {
                 return false;
             }
         }
@@ -263,7 +263,11 @@ class qtype_programmedresp_question extends question_graded_automatically {
      * @return type
      */
     public function get_matching_answer($useranswer, $answernum) {
-        return $this->test_programmed_response($useranswer, $this->answers[$answernum]->answer);
+        if (empty($useranswer)) {
+            $useranswer = '';
+        }
+        return $this->test_programmed_response($this->answers[$answernum]->answer, $useranswer);
+
     }
 
     /**
@@ -283,9 +287,8 @@ class qtype_programmedresp_question extends question_graded_automatically {
         if ($result === 0 && $response == '') {
             return 1;
         }
-
         // If it's not an integer nor a float it's a string
-        if (!programmedresp_is_numeric($response)) {
+        if (!is_numeric($response)) {
             // strval() vs strval() has been previously tested
             return 0;
         }
