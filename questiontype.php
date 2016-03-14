@@ -104,7 +104,7 @@ class qtype_programmedresp extends question_type {
         $question->args = $questiondata->options->args;
         $question->function = $questiondata->options->function;
         // Response options
-        $question->expectedresps = $questiondata->options->responses;
+        $question->respfields = $questiondata->options->responses;
     }
 
     /**
