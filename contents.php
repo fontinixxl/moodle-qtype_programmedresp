@@ -14,11 +14,12 @@ require_once($CFG->dirroot . '/question/editlib.php');
 
 
 
+require_login_in_context(required_param('contextid', PARAM_INT));
+
 $action = optional_param('action', false, PARAM_ALPHAEXT);
 if (!$action) {
     die();
 }
-global $DB, $PAGE;
 
 $outputmanager = new programmedresp_output_ajax($mform);
 switch ($action) {

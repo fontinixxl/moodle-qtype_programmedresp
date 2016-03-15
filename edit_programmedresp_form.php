@@ -73,6 +73,12 @@ class qtype_programmedresp_edit_form extends question_edit_form {
         $mform->addElement('hidden', 'quizid', $this->quizid);
         $mform->setType('quizid', PARAM_INT);
 
+        // TODO: Refacor it with something more clean
+        // context id will be required on contents.php once it will called by AJAX (script.js)
+        $mform->addElement('hidden', 'contextid', $PAGE->context->id);
+        $mform->setType('contextid', PARAM_INT);
+
+
         $outputmanager = new prgrammedresp_output($mform);
 
         $editingjsparam = 'false';
