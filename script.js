@@ -151,11 +151,10 @@ function display_args(element) {
         questiontextvalue = '';
     }
     questiontextvalue = questiontextvalue.replace(questiontextregexpfilter, " ");
-    contextid = document.getElementsByName('contextid')[0].value;
 
     // function id + question text to extract the vars + the concatenated vars created
     return display_section("action=displayargs&function=" + functionid + "&questiontext=" + questiontextvalue
-            + concatstring + "&quizid=" + quizid + "&contextid=" + contextid);
+            + concatstring + "&quizid=" + quizid);
 }
 
 
@@ -179,8 +178,11 @@ function display_section(params) {
             };
 
     dir = wwwroot + "/question/type/programmedresp/contents.php";
+    // Add contextid as a param for all AJAX requests
+    contextid = document.getElementsByName('contextid')[0].value;
+    params += "&contextid=" + contextid;
 
-    YUI().use('yui2-connection', function(Y) {
+    YUI().use('yui2-connection', function (Y) {
         Y.YUI2.util.Connect.asyncRequest('POST', dir, callbackHandler, params);
     });
 
