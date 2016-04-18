@@ -246,16 +246,19 @@ function add_concat_var() {
 
     // Responses manager
     var callbackHandler =
-            {
-                success: process_add_concat_var,
-                failure: failure_add_concat_var,
-                timeout: 50000
-            };
+    {
+        success: process_add_concat_var,
+        failure: failure_add_concat_var,
+        timeout: 50000
+    };
 
     var params = "action=addconcatvar&concatnum=" + concatnum + varsstring;
-    console.log(params);
+    // Add contextid as a param for all AJAX requests
+    contextid = document.getElementsByName('contextid')[0].value;
+    params += "&contextid=" + contextid;
+
     dir = wwwroot + "/question/type/programmedresp/contents.php";
-    YUI().use('yui2-connection', function(Y) {
+    YUI().use('yui2-connection', function (Y) {
         Y.YUI2.util.Connect.asyncRequest('POST', dir, callbackHandler, params);
     });
 

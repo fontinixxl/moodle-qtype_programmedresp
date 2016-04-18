@@ -110,7 +110,7 @@ function programmedresp_get_concat_vars($args = false) {
         for ($concatnum = 0; $concatnum < 50; $concatnum++) {
 
             $varname = 'concatvar_' . $concatnum;
-            if ($concat = optional_param($varname, false, PARAM_ALPHANUM)) {
+            if ($concat = optional_param_array($varname, false, PARAM_ALPHANUM)) {
                 if ($cancatname = optional_param('n' . $varname, false, PARAM_ALPHANUM)) {
                     $concatvars[$varname] = $cancatname;
                 } else {

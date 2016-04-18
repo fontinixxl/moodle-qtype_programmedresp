@@ -159,7 +159,7 @@ class qtype_programmedresp extends question_type {
             // Inserting/Updating the new concat var
             } else if (substr($varname, 0, 10) == 'concatvar_') {
                 $concatnum = intval(substr($varname, 10));
-                if (!$concatvalues = optional_param('concatvar_' . $concatnum, false, PARAM_ALPHANUM)) {
+                if (!$concatvalues = optional_param_array('concatvar_' . $concatnum, false, PARAM_ALPHANUM)) {
                         print_error('errorcantfindvar', 'qtype_programmedresp', $varname);
                 }
                 $concatobj = new stdClass();

@@ -82,17 +82,6 @@ class prgrammedresp_output {
             //Concat vars
             $concatdiv = '<div id="id_concatvars">';
 
-            // Restoring concat vars if updating and they exists
-            if ($args) {
-                foreach ($args as $arg) {
-                    if (PROGRAMMEDRESP_ARG_CONCAT == $arg->type) {
-
-                        $concatdata = programmedresp_get_concatvar_data($arg->value);
-                        $concatdiv.= $this->add_concat_var($concatdata->name, $vars, $concatdata->values, true, $concatdata->readablename);
-                    }
-                }
-            }
-
             // Restoring the concatenated vars
             if ($quizconcatvars) {
                 foreach ($quizconcatvars as $concatdata) {
@@ -134,14 +123,6 @@ class prgrammedresp_output {
         $attrs['onchange'] = 'return display_args(this);';
         $this->print_form_select(get_string('function', 'qtype_programmedresp'), 'programmedrespfid', $options, $attrs);
     }
-
-    /**
-     * Prints form elements to assign vars / values to the selected function arguments
-     * @param $functionid
-     * @param $questiontext
-     * @param $args
-     * @param $vars
-     */
 
     /**
      * Prints form elements to assign vars / values to the selected function arguments

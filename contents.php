@@ -44,7 +44,7 @@ switch ($action) {
 
     case 'addconcatvar' :
         $concatnum = optional_param('concatnum', false, PARAM_INT);
-        $vars = optional_param('vars', false, PARAM_ALPHANUM);
+        $vars = optional_param_array('vars', false, PARAM_ALPHANUM);
         $outputmanager->add_concat_var("concatvar_" . $concatnum, $vars, false, false);
         break;
 }
