@@ -336,7 +336,7 @@ class qtype_programmedresp extends question_type {
         if ($vars) {
             foreach ($vars as $var) {
                 // Delete all random values for each variable.
-                $DB->delete_records('qtype_programmedresp_val', array('programmedrespvarid' => $var->id));
+                $DB->delete_records('qtype_programmedresp_val', array('varid' => $var->id));
             }
             // Delete variables.
             $DB->delete_records('qtype_programmedresp_var', array('question' => $questionid));
