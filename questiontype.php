@@ -326,9 +326,9 @@ class qtype_programmedresp extends question_type {
             foreach ($args as $arg) {
                 $DB->delete_records('qtype_programmedresp_v_arg', array('programmedrespargid' => $arg->id));
             }
-            // Once all linkerdesc association has been deleted.
-            $DB->delete_records('qtype_programmedresp_arg', array('question' => $questionid));
         }
+        // Delete args
+        $DB->delete_records('qtype_programmedresp_arg', array('question' => $questionid));
         // Delete responses
         $DB->delete_records('qtype_programmedresp_resp', array('question' => $questionid));
 
