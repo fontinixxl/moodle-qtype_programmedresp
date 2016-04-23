@@ -84,9 +84,9 @@ class qtype_programmedresp extends question_type {
         $question->options->concatvars = $DB->get_records('qtype_programmedresp_conc',
                 array('question' => $question->id));
         $question->options->args = $DB->get_records('qtype_programmedresp_arg',
-                array('programmedrespid' => $question->options->programmedresp->id), '', 'argkey, id, type, value');
+                array('question' => $question->id), '', 'argkey, id, type, value');
         $question->options->responses = $DB->get_records('qtype_programmedresp_resp',
-                array('programmedrespid' => $question->options->programmedresp->id), 'returnkey ASC', 'returnkey, label');
+                array('question' => $question->id), 'returnkey ASC', 'returnkey, label');
         $question->options->function = $DB->get_record('qtype_programmedresp_f',
                 array('id' => $question->options->programmedrespfid));
     }
@@ -124,7 +124,7 @@ class qtype_programmedresp extends question_type {
 
         // If we are updating, they will be reinserted
         if (!empty($programmedresp->id)) {
-            $DB->delete_records('qtype_programmedresp_resp', array('programmedrespid' => $programmedresp->id));
+            $DB->delete_records('qtype_programmedresp_resp', array('question' => $question->id));
         }
         $argtypesmapping = programmedresp_get_argtypes_mapping();
         $i = 0;
@@ -143,7 +143,7 @@ class qtype_programmedresp extends question_type {
                 // Insert a function argument
             } else if (substr($varname, 0, 8) == 'argtype_') {
                 $argobj = new stdClass();
-                $argobj->programmedrespid = $programmedresp->id;
+                $argobj->question = $question->id;
                 $argobj->argkey = intval(substr($varname, 8));  // integer
                 $argobj->type = intval($value);
 
@@ -170,7 +170,7 @@ class qtype_programmedresp extends question_type {
                 // Insert a function response
             } else if (substr($varname, 0, 5) == 'resp_') {
                 $resp = new stdClass();
-                $resp->programmedrespid = $programmedresp->id;
+                $resp->question = $question->id;
                 $resp->returnkey = intval(substr($varname, 5));   // $varname must be something like resp_0
                 $resp->label = clean_param($value, PARAM_TEXT);
                 if (!$DB->insert_record('qtype_programmedresp_resp', $resp)) {
@@ -265,7 +265,7 @@ class qtype_programmedresp extends question_type {
 
                 // Update
                 if ($arg->id = $DB->get_field('qtype_programmedresp_arg', 'id',
-                        array('programmedrespid' => $arg->programmedrespid, 'argkey' => $arg->argkey))) {
+                        array('question' => $arg->question, 'argkey' => $arg->argkey))) {
 
                     if (!$DB->update_record('qtype_programmedresp_arg', $arg)) {
                         print_error('errordb', 'qtype_programmedresp');
@@ -322,15 +322,15 @@ class qtype_programmedresp extends question_type {
 
         // Delete all argument associations with global vars (linkerdesc).
         if ($args = $DB->get_records('qtype_programmedresp_arg', array(
-            'programmedrespid' => $programmedresp->id, 'type' => PROGRAMMEDRESP_ARG_LINKER))) {
+            'question' => $questionid, 'type' => PROGRAMMEDRESP_ARG_LINKER))) {
             foreach ($args as $arg) {
                 $DB->delete_records('qtype_programmedresp_v_arg', array('programmedrespargid' => $arg->id));
             }
             // Once all linkerdesc association has been deleted.
-            $DB->delete_records('qtype_programmedresp_arg', array('programmedrespid' => $programmedresp->id));
+            $DB->delete_records('qtype_programmedresp_arg', array('question' => $questionid));
         }
         // Delete responses
-        $DB->delete_records('qtype_programmedresp_resp', array('programmedrespid' => $programmedresp->id));
+        $DB->delete_records('qtype_programmedresp_resp', array('question' => $questionid));
 
         $vars = $DB->get_records('qtype_programmedresp_var', array('question' => $questionid));
         if ($vars) {

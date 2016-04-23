@@ -84,7 +84,7 @@
         <TABLE NAME="qtype_programmedresp_arg" COMMENT="The arguments of the response function, the value field depends on the type content">
             <FIELDS>
                 <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
-                <FIELD NAME="programmedrespid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+                <FIELD NAME="question" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
                 <FIELD NAME="argkey" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
                 <FIELD NAME="type" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="1" SEQUENCE="false"/>
                 <FIELD NAME="value" TYPE="char" LENGTH="255" NOTNULL="false" SEQUENCE="false" COMMENT="Char type, but supports both string (varname) and float (fixed value)"/>
@@ -93,14 +93,14 @@
                 <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
             </KEYS>
             <INDEXES>
-                <INDEX NAME="programmedrespid_type" UNIQUE="false" FIELDS="programmedrespid, type"/>
-                <INDEX NAME="programmedrespid_argkey" UNIQUE="false" FIELDS="programmedrespid, argkey"/>
+                <INDEX NAME="question_type" UNIQUE="false" FIELDS="question, type"/>
+                <INDEX NAME="question_argkey" UNIQUE="false" FIELDS="question, argkey"/>
             </INDEXES>
         </TABLE>
         <TABLE NAME="qtype_programmedresp_resp" COMMENT="The description of each programmed response">
             <FIELDS>
                 <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
-                <FIELD NAME="programmedrespid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+                <FIELD NAME="question" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
                 <FIELD NAME="returnkey" TYPE="int" LENGTH="1" NOTNULL="false" DEFAULT="0" SEQUENCE="false"/>
                 <FIELD NAME="label" TYPE="char" LENGTH="255" NOTNULL="false" SEQUENCE="false"/>
                 <FIELD NAME="answer" TYPE="char" LENGTH="255" NOTNULL="false" SEQUENCE="false" COMMENT="Char type, but supports both string (varname) and float (fixed value)"/>
@@ -109,7 +109,7 @@
                 <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
             </KEYS>
             <INDEXES>
-                <INDEX NAME="programmedrespid" UNIQUE="false" FIELDS="programmedrespid"/>
+                <INDEX NAME="question" UNIQUE="false" FIELDS="question"/>
             </INDEXES>
         </TABLE>
         <TABLE NAME="qtype_programmedresp_conc" COMMENT="Concatenated vars">
