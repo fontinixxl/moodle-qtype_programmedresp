@@ -126,7 +126,6 @@
             </KEYS>
             <INDEXES>
                 <INDEX NAME="question" UNIQUE="false" FIELDS="question"/>
-                <INDEX NAME="questionvars" UNIQUE="true" FIELDS="question, vars"/>
             </INDEXES>
         </TABLE>
         <TABLE NAME="qtype_programmedresp_v_arg" COMMENT="Stores the programmedresp question arguments value of linkerdesc variables">
