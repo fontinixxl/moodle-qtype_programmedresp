@@ -140,6 +140,10 @@
                 <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
                 <KEY NAME="programmedrespargid" TYPE="foreign" FIELDS="programmedrespargid" REFTABLE="qtype_programmedresp_arg" REFFIELDS="id"/>
             </KEYS>
+            <!-- TODO: Add index to upgrade.php. It's not possible to have two args for one quiz! so there must be unique! -->
+            <INDEXES>
+                <INDEX NAME="quizarg" UNIQUE="true" FIELDS="quizid, programmedrespargid"/>
+            </INDEXES>
         </TABLE>
     </TABLES>
 </XMLDB>

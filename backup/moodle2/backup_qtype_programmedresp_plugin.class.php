@@ -80,6 +80,11 @@ class backup_qtype_programmedresp_plugin extends backup_qtype_plugin
             'returnkey', 'label'
         ));
 
+        $var_args = new backup_nested_element('var_args');
+        $var_arg = new backup_nested_element('var_arg', array('id'), array(
+            'type', 'instanceid', 'programmedrespargid'
+        ));
+
         // Now the own qtype tree.
         $pluginwrapper->add_child($vars);
         $vars->add_child($var);
@@ -92,6 +97,9 @@ class backup_qtype_programmedresp_plugin extends backup_qtype_plugin
         $pluginwrapper->add_child($resps);
         $resps->add_child($resp);
 
+        $pluginwrapper->add_child($var_args);
+        $var_args->add_child($var_arg);
+
         // Dependences between them
         $pluginwrapper->add_child($function);
         $pluginwrapper->add_child($programmedresp);
@@ -100,13 +108,20 @@ class backup_qtype_programmedresp_plugin extends backup_qtype_plugin
         $var->set_source_table('qtype_programmedresp_var',
             array('question' => backup::VAR_PARENTID));
 
+
         $concatvar->set_source_sql("
             SELECT conc.*
               FROM {qtype_programmedresp_arg} arg
               JOIN {qtype_programmedresp_conc} conc ON conc.id = arg.value
              WHERE conc.question = ?
-                   AND arg.type = '3'",
-            array(backup::VAR_PARENTID));
+                   AND arg.type = ?",
+            array(
+                backup::VAR_PARENTID,
+                array(
+                    'sqlparam' => PROGRAMMEDRESP_ARG_CONCAT,
+                ),
+            )
+        );
 
         $arg->set_source_table('qtype_programmedresp_arg',
             array('question' => backup::VAR_PARENTID));
@@ -114,7 +129,23 @@ class backup_qtype_programmedresp_plugin extends backup_qtype_plugin
         $resp->set_source_table('qtype_programmedresp_resp',
             array('question' => backup::VAR_PARENTID));
 
-        // TODO: Backup function CODE.
+        $var_arg->set_source_sql('
+            SELECT pva.*
+              FROM {qtype_programmedresp_v_arg} pva
+              JOIN {qtype_programmedresp_arg} pa ON pva.programmedrespargid = pa.id
+             WHERE pa.question = ?
+                   AND pva.quizid = ?
+                   AND pa.type = ',
+            array(
+                backup::VAR_PARENTID,
+                backup::VAR_MODNAME,
+                array(
+                    'sqlparam' => PROGRAMMEDRESP_ARG_LINKER,
+                ),
+            )
+        );
+
+        // TODO: Backup function CODE too.
         $function->set_source_sql('
             SELECT f.*
               FROM {qtype_programmedresp_f} f
