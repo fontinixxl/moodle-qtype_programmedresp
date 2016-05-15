@@ -361,11 +361,11 @@ function programmedresp_check_datarootfile() {
 
 function programmedresp_check_base_functions_category() {
 
-    global $CFG;
+    global $CFG, $DB;
 
-    $number = count_records('qtype_programmedresp_fcat');
+    $number = $DB->count_records('qtype_programmedresp_fcat');
     if ($number == 0) {
-
+        $fcat = new stdClass();
         $fcat->parent = 0;
         $fcat->name = get_string('pluginname', 'qtype_programmedresp');
         if (!$fcat->id = insert_record('qtype_programmedresp_fcat', $fcat)) {

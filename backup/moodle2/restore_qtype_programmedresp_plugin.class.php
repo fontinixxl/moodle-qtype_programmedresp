@@ -129,8 +129,8 @@ class restore_qtype_programmedresp_plugin extends restore_qtype_plugin {
      * @param $data
      */
     public function process_function($data) {
-        global $DB;
-
+        global $DB, $CFG;
+        require_once($CFG->dirroot . '/question/type/programmedresp/lib.php');
         $data = (object)$data;
         $oldid = $data->id;
 
