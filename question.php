@@ -366,6 +366,8 @@ class qtype_programmedresp_question extends question_graded_automatically {
      */
     public function calculate_correct_response_without_round() {
 
+        // TODO: quizid shoud be initialized as class attribute
+        // on constructor method, not here!
         $quizid = programmedresp_get_quizid($this->usageid);
 
         $exec = '$results = ' . $this->function->name . '(';
@@ -376,6 +378,7 @@ class qtype_programmedresp_question extends question_graded_automatically {
         $exec.= ');';
 
         $exec = 'ob_start();' . $exec . 'ob_end_clean();';
+        // TODO: Catch possible exception ?
         eval($exec);
 
         if (!is_array($results)) {

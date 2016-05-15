@@ -84,7 +84,7 @@ class qtype_programmedresp extends question_type {
         $question->options->concatvars = $DB->get_records('qtype_programmedresp_conc',
                 array('question' => $question->id));
         $question->options->args = $DB->get_records('qtype_programmedresp_arg',
-                array('question' => $question->id), '', 'argkey, id, type, value');
+                array('question' => $question->id), 'argkey ASC', 'argkey, id, type, value');
         $question->options->responses = $DB->get_records('qtype_programmedresp_resp',
                 array('question' => $question->id), 'returnkey ASC', 'returnkey, label');
         $question->options->function = $DB->get_record('qtype_programmedresp_f',
