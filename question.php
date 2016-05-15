@@ -490,6 +490,8 @@ class qtype_programmedresp_question extends question_graded_automatically {
 
                         $randomvalues = array_merge($randomvalues, programmedresp_unserialize($random));
                     }
+                    var_dump("randomvalues");
+                    print_object($randomvalues);
                 }
 
                 break;
@@ -501,6 +503,8 @@ class qtype_programmedresp_question extends question_graded_automatically {
 
             // Return it as a string to eval()
         } else {
+            var_dump("random values");
+            print_object($randomvalues);
             $value = $this->get_function_params_array($randomvalues);
         }
 
