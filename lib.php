@@ -368,7 +368,7 @@ function programmedresp_check_base_functions_category() {
         $fcat = new stdClass();
         $fcat->parent = 0;
         $fcat->name = get_string('pluginname', 'qtype_programmedresp');
-        if (!$fcat->id = insert_record('qtype_programmedresp_fcat', $fcat)) {
+        if (!$fcat->id = $DB->insert_record('qtype_programmedresp_fcat', $fcat)) {
             print_error('errordb', 'qtype_programmedresp');
         }
 
