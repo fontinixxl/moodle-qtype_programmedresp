@@ -9,7 +9,7 @@
  */
 require_once('../../../config.php');
 
-global $CFG, $PAGE;
+global $CFG, $PAGE, $OUTPUT;
 
 require_once($CFG->dirroot . '/question/type/programmedresp/forms/programmedresp_addcategory_form.php');
 require_once($CFG->dirroot . '/question/type/programmedresp/forms/programmedresp_addfunctions_form.php');
@@ -46,7 +46,8 @@ switch ($action) {
             }
         }
 
-        $form = new programmedresp_addcategory_form($CFG->wwwroot . '/question/type/programmedresp/manage.php', array('categories' => $catoptions));
+        $form = new programmedresp_addcategory_form($CFG->wwwroot . '/question/type/programmedresp/manage.php',
+            array('categories' => $catoptions));
 
         // Insert category
         if ($data = $form->get_data()) {
@@ -106,6 +107,7 @@ switch ($action) {
                         notify('<strong>'.$function->name . '</strong>: ' . get_string('errorfunctionalreadycreated', 'qtype_programmedresp'), 'notifyproblem');
                         continue;
                     }
+                    $fdata = new stdClass();
                     $fdata->programmedrespfcatid = $fcatid;
                     $fdata->name = $function->name;
                     $fdata->description = addslashes($function->description);

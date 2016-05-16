@@ -42,6 +42,9 @@ class functions_tokenizer {
         $i = 0;   // Functions count
         $j = 0;   // Comments count
         $functions = array();
+        $functions[$i] = new stdClass();
+        $functions[$j] = new stdClass();
+
         $functiondata = array('');
 
         $tokenscode = '<?php ' . $code . '?>';
@@ -74,7 +77,7 @@ class functions_tokenizer {
                         $notification.= $code;
 
                         // Getting system admins
-                        $systemcontext = get_context_instance(CONTEXT_SYSTEM);
+                        $systemcontext = context_system::instance();
                         $admins = get_users_by_capability($systemcontext, 'moodle/site:doanything', 'u.*');
                         foreach ($admins as $admin) {
                             email_to_user($admin, $admin, $subject, $notification);
@@ -90,10 +93,13 @@ class functions_tokenizer {
                     if ($token == 'T_FUNCTION') {
 
                         $j++;
+                        $function[$j] = new stdClass();
+
 
                         // Set the function key
                         if (isset($functions[$i]->functioncode)) {
                             $i++;
+                            $function[$i] = new stdClass();
                         }
                         $functions[$i]->functioncode = $tokendata[1] . ' ';
                         $setfunctionname = true;
@@ -127,7 +133,7 @@ class functions_tokenizer {
                     preg_match_all('/@param\s+(.*?)\s*(?=$|@[a-z]+\s)/s', $data, $params);
                     if ($params) {
                         foreach ($params[1] as $key => $match) {
-
+                            $functions[$j]->params[$key] = new stdClass();
                             $matcharray = explode(' ', $match);
                             $functions[$j]->params[$key]->type = array_shift($matcharray);
                             array_shift($matcharray);
