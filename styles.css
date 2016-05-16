@@ -59,6 +59,8 @@
 
 .que.programmedresp .programmedresp_novars {
     padding: 10px;
-
 }
 
+#page-question-type-programmedresp .redtext {
+    color:#954254;
+}

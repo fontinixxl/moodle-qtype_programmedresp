@@ -232,11 +232,16 @@ class prgrammedresp_output {
                     $concatclass = '';
                 } else if ($args[$key]->type == PROGRAMMEDRESP_ARG_LINKER && $linkervars) {
 
-                    $vararg = $DB->get_record('qtype_programmedresp_v_arg',
-                            array('quizid' => $quizid, 'programmedrespargid' => $args[$key]->id));
-                    // assign the previous selected linkervar
-                    $linkervalue = $linkervars[$vararg->type . '_' . $vararg->instanceid];
                     $linkerclass = '';
+                    // Get the previous selected linker var if it was.
+                    if ($vararg = $DB->get_record('qtype_programmedresp_v_arg',
+                            array('quizid' => $quizid, 'programmedrespargid' => $args[$key]->id))) {
+
+                        // Assign the previous selected linkervar
+                        $linkervalue = $linkervars[$vararg->type . '_' . $vararg->instanceid];
+                    } else {
+                        $linkerclass = "redtext";
+                    }
                 }
             }
 
@@ -272,6 +277,11 @@ class prgrammedresp_output {
             // Linkerdesc variables
             if ($linkervars) {
                 $paramelement.= '<select name="linker_' . $key . '" id="id_argument_linker_' . $key . '" class="' . $linkerclass . '">';
+                // It can be empty either when restor a quiz with linkervars or
+                // when we fill arg as linker on quiz context outside.
+                if (empty($linkervalue)) {
+                    $paramelement.= "<option disabled selected value> -- select an option -- </option>";
+                }
                 foreach ($linkervars as $varid => $varname) {
                     $selectedstr = '';
                     if ($linkervalue == $varname) {
