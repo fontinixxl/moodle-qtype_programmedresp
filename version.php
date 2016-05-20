@@ -27,7 +27,7 @@
 defined('MOODLE_INTERNAL') || die();
 
 $plugin->component = 'qtype_programmedresp';
-$plugin->version   = 2016051500;
+$plugin->version   = 2016052000;
 $plugin->requires  = 2015111600;
 $plugin->maturity  = MATURITY_BETA;
-$plugin->release = '1.0.5';
+$plugin->release = '1.1.0';
