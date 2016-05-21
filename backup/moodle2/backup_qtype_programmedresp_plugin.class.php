@@ -40,6 +40,8 @@ class backup_qtype_programmedresp_plugin extends backup_qtype_plugin
      */
     protected function define_question_plugin_structure()
     {
+        global $CFG, $DB;
+        require_once($CFG->dirroot . '/question/type/programmedresp/lib.php');
 
         // Define the virtual plugin element with the condition to fulfill.
         // Note: we use $this->pluginname so for extended plugins this will work
@@ -61,11 +63,12 @@ class backup_qtype_programmedresp_plugin extends backup_qtype_plugin
         $concatvar = new backup_nested_element('concatvar', array('id'), array(
             'name', 'readablename', 'vars'
         ));
-        // Adding additional -code- element to save
-        // the function code (stored in a file on dataroot)
         $function = new backup_nested_element('function', array('id'), array(
             'programmedrespfcatid', 'name', 'description', 'nreturns', 'params', 'results'
         ));
+        // Back up function -code- element to save stored in a file on dataroot.
+        $functioncode = new backup_nested_element('fcode', array('code'), null);
+
         $programmedresp = new backup_nested_element('programmedresp', array('id'), array(
             'programmedrespfid', 'tolerancetype', 'tolerance'
         ));
@@ -94,6 +97,7 @@ class backup_qtype_programmedresp_plugin extends backup_qtype_plugin
 
         // Dependences between them
         $pluginwrapper->add_child($function);
+        $pluginwrapper->add_child($functioncode);
         $pluginwrapper->add_child($programmedresp);
 
         // Set source to populate the data.
@@ -114,13 +118,29 @@ class backup_qtype_programmedresp_plugin extends backup_qtype_plugin
         $resp->set_source_table('qtype_programmedresp_resp',
             array('question' => backup::VAR_PARENTID));
 
-        // TODO: Backup function CODE.
         $function->set_source_sql('
             SELECT f.*
               FROM {qtype_programmedresp_f} f
               JOIN {qtype_programmedresp} p ON f.id = p.programmedrespfid
              WHERE p.question = ?',
             array(backup::VAR_PARENTID));
+
+        // Set the function code source
+
+        $funct = $DB->get_record_sql('
+            SELECT f.name
+              FROM {qtype_programmedresp_f} f
+              JOIN {qtype_programmedresp} p ON f.id = p.programmedrespfid
+             WHERE p.question = ?',
+        array($this->task->get_sectionid()));
+
+
+        $functioncodearr = array();
+        if ($funct) {
+            $fcode = programmedresp_get_function_code($funct->name);
+            $functioncodearr = array((object)array('code' => $fcode));
+        }
+        $functioncode->set_source_array($functioncodearr);
 
         $programmedresp->set_source_table('qtype_programmedresp',
             array('question' => backup::VAR_PARENTID));
