@@ -115,13 +115,18 @@ switch ($action) {
                     $fdata->params = addslashes(programmedresp_serialize($function->params));
                     $fdata->results = addslashes(programmedresp_serialize($function->results));
                     $fdata->timeadded = time();
-
+                    // Store function code to database too.
+                    $fdata->fcode = serialize($function->functioncode);
                     if (!$fdata->id = $DB->insert_record('qtype_programmedresp_f', $fdata)) {
                         print_error('errordb', 'qtype_programmedresp');
                     }
 
+                    // $fdisplay = $DB->get_record('qtype_programmedresp_f',array('id' => $fdata->id));
+                    // print_object(unserialize($fdisplay->fcode));
+
                     notify(get_string('functionadded', 'qtype_programmedresp', $function->name), 'notifysuccess', 'center');
-                    programmedresp_add_repository_function($function->functioncode);
+                    // TODO: do something with this function (either remove or edit)
+                    //programmedresp_add_repository_function($function->functioncode);
 
                     // Array to add to the parent select functions form element
                     $fdatas[] = clone $fdata;

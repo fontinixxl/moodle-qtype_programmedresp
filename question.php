@@ -29,8 +29,8 @@ defined('MOODLE_INTERNAL') || die();
 require_once($CFG->dirroot . '/question/type/programmedresp/lib.php');
 // TODO Review it: I think the question engine API has some method to do that!
 //File to store the php functions used to calculate the response
-programmedresp_check_datarootfile();
-require_once($CFG->dataroot . '/qtype_programmedresp.php');
+//programmedresp_check_datarootfile();
+//require_once($CFG->dataroot . '/qtype_programmedresp.php');
 // END TODO
 
 /**
@@ -365,7 +365,7 @@ class qtype_programmedresp_question extends question_graded_automatically {
      * @return type
      */
     public function calculate_correct_response_without_round() {
-
+        global $DB;
         // TODO: quizid shoud be initialized as class attribute
         // on constructor method, not here!
         $quizid = programmedresp_get_quizid($this->usageid);
@@ -377,8 +377,14 @@ class qtype_programmedresp_question extends question_graded_automatically {
         $exec.= implode(', ', $execargs);
         $exec.= ');';
 
-        $exec = 'ob_start();' . $exec . 'ob_end_clean();';
-        // TODO: Catch possible exception ?
+        $function = $DB->get_record('qtype_programmedresp_f',array('id' => $this->function->id));
+
+        $functioncode = get_fcode_dependencies($function);
+        //$functioncode = unserialize($function->fcode);
+
+        $exec = 'ob_start();' . $functioncode . $exec . 'ob_end_clean();';
+
+        // TODO: Catch possible exception?
         eval($exec);
 
         if (!is_array($results)) {
@@ -388,6 +394,24 @@ class qtype_programmedresp_question extends question_graded_automatically {
         return $results;
     }
 
+    function get_f_dependencies($function) {
+        /**
+         * TODO: obtenir les d
+         */
+    }
+    function get_fcode_dependencies($function) {
+        $fcode = '';
+        // Get an array of function's objects.
+        $fdependencies = get_f_dependencies($function);
+        if ($fdependencies) {
+            foreach ($fdependencies as $fdependency) {
+                $fcode .= get_fcode_dependencies($fdependency);
+            }
+        } else {
+            return $function->code;
+        }
+        return ($fcode . $function->code);
+    }
     /**
      * Gets a string to embed in a eval()
      *

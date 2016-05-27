@@ -41,6 +41,28 @@ function xmldb_qtype_programmedresp_upgrade($oldversion) {
     // Put any upgrade step following this
     // Moodle v2.4.0 release upgrade line
     // Put any upgrade step following this
+    // Moodle v3.0.0 release upgrade line.
+    // Put any upgrade step following this.
+
+    // 2016052400 => v1.2.0
+    if ($oldversion < 2016052400) {
+
+        // Define field fcode to be added to qtype_programmedresp_f.
+        $table = new xmldb_table('qtype_programmedresp_f');
+        // TODO: change 5 param NULL TO NOTNULL!!
+        $field = new xmldb_field('fcode', XMLDB_TYPE_BINARY, null, null, null, null, null, 'timeadded');
+
+        // Conditionally launch add field fcode.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Programmedresp savepoint reached.
+        upgrade_plugin_savepoint(true, 2016052400, 'qtype', 'programmedresp');
+
+        // TODO: We need to perform some post-action to migrate fcode from file to db.
+    }
+
 
 
     return true;
