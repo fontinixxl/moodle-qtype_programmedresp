@@ -162,7 +162,7 @@ function programmedresp_get_var_fields() {
 function programmedresp_get_argtypes_mapping() {
 
     return array(PROGRAMMEDRESP_ARG_FIXED => 'fixed',
-        PROGRAMMEDRESP_ARG_VARIABLE => 'variable',
+        PROGRAMMEDRESP_ARG_VARIABLE => 'var',
         PROGRAMMEDRESP_ARG_CONCAT => 'concat',
         PROGRAMMEDRESP_ARG_LINKER => 'linker');
 }

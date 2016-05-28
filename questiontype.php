@@ -141,14 +141,20 @@ class qtype_programmedresp extends question_type {
                 empty($vars[$vardata[2]]) && $vars[$vardata[2]] = new stdClass();
                 $vars[$vardata[2]]->{$vardata[1]} = clean_param($value, PARAM_FLOAT);   // integer or float
                 // Insert a function argument
+                // argtype_0 => '0' - where the value is the argument's type (linker, var, concat)
             } else if (substr($varname, 0, 8) == 'argtype_') {
                 $argobj = new stdClass();
                 $argobj->question = $question->id;
+                // Store the arg number.
                 $argobj->argkey = intval(substr($varname, 8));  // integer
                 $argobj->type = intval($value);
 
                 // There are a form element for each var type (fixed, variable, concat, linkerdesc)
-                // $argvalue contains the value of the selected var.
+                // $argvalue contains the id of the selected var.
+                // for linker var the arg value is like this: {var|concat}_varnum:
+                // Example:
+                //  - var_12
+                //  - concat_1
                 $argname = $argtypesmapping[intval($value)] . "_" . $argobj->argkey;
                 $argvalue = optional_param($argname, false, PARAM_ALPHANUMEXT);
                 $argobj->value = clean_param($argvalue, PARAM_TEXT);  // integer or float if it's fixed or a varname
@@ -176,18 +182,6 @@ class qtype_programmedresp extends question_type {
                 if (!$DB->insert_record('qtype_programmedresp_resp', $resp)) {
                     print_error('errordb', 'qtype_programmedresp');
                 }
-
-            // Store selected linker vars for the $argindex argument
-            } else if (substr($varname, 0, 7) == 'linker_') {
-                $linkervardata = explode('_', clean_param($value, PARAM_ALPHANUMEXT));
-                $argindex = intval(substr($varname, -1));
-
-                $linkerobj = new stdClass();
-                $linkerobj->quizid = $question->quizid;
-                $linkerobj->type = $linkervardata[0]; //var or concatvar
-                $linkerobj->instanceid = $linkervardata[1];
-
-                $linkervararg[$argindex] = $linkerobj;
             }
         }
 
@@ -263,6 +257,11 @@ class qtype_programmedresp extends question_type {
                     $arg->value = $concatvars[$arg->value]->id;
                 }
 
+                if ($arg->type == PROGRAMMEDRESP_ARG_LINKER) {
+                    // 
+                    $arg->value = explode('_', clean_param($value, PARAM_ALPHANUMEXT));
+                }
+
                 // Update
                 if ($arg->id = $DB->get_field('qtype_programmedresp_arg', 'id',
                         array('question' => $arg->question, 'argkey' => $arg->argkey))) {
@@ -278,7 +277,7 @@ class qtype_programmedresp extends question_type {
                     }
                 }
 
-                // If it's a linkerdesc qtype it must be stored with the selected var
+                // If it's a linkerdesc it must be stored with thmpte selected var
                 if (!empty($linkervararg[$argkey]) && $arg->type == PROGRAMMEDRESP_ARG_LINKER) {
                     $linkervararg[$argkey]->programmedrespargid = $arg->id;
 
