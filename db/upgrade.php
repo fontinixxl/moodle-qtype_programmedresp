@@ -34,13 +34,20 @@ function xmldb_qtype_programmedresp_upgrade($oldversion) {
 
     $dbman = $DB->get_manager();
 
+    if ($oldversion < 2016060700) {
 
-    // Moodle v2.2.0 release upgrade line
-    // Put any upgrade step following this
-    // Moodle v2.3.0 release upgrade line
-    // Put any upgrade step following this
-    // Moodle v2.4.0 release upgrade line
-    // Put any upgrade step following this
+        // Define field origin to be added to qtype_programmedresp_arg.
+        $table = new xmldb_table('qtype_programmedresp_arg');
+        $field = new xmldb_field('origin', XMLDB_TYPE_CHAR, '8', null, XMLDB_NOTNULL, null, null, 'value');
+
+        // Conditionally launch add field origin.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Programmedresp savepoint reached.
+        upgrade_plugin_savepoint(true, 2016060700, 'qtype', 'programmedresp');
+    }
 
 
     return true;

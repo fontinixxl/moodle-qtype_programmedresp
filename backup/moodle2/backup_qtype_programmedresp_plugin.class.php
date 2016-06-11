@@ -55,11 +55,11 @@ class backup_qtype_programmedresp_plugin extends backup_qtype_plugin
         // Now create the qtype own structures.
         $vars = new backup_nested_element('vars');
         $var = new backup_nested_element('var', array('id'), array(
-            'varname', 'nvalues', 'maximum', 'minimum', 'valueincrement'
+            'question', 'varname', 'nvalues', 'maximum', 'minimum', 'valueincrement'
         ));
         $concatvars = new backup_nested_element('concatvars');
         $concatvar = new backup_nested_element('concatvar', array('id'), array(
-            'name', 'readablename', 'vars'
+            'question', 'name', 'readablename', 'vars'
         ));
         // Adding additional -code- element to save
         // the function code (stored in a file on dataroot)
@@ -72,7 +72,7 @@ class backup_qtype_programmedresp_plugin extends backup_qtype_plugin
         // Each question can have some function arguments.
         $args = new backup_nested_element('args');
         $arg = new backup_nested_element('arg', array('id'), array(
-            'argkey', 'type', 'value'
+            'argkey', 'origin', 'type', 'value'
         ));
         // Each question can have some function arguments.
         $resps = new backup_nested_element('resps');
@@ -96,17 +96,29 @@ class backup_qtype_programmedresp_plugin extends backup_qtype_plugin
         $pluginwrapper->add_child($function);
         $pluginwrapper->add_child($programmedresp);
 
-        // Set source to populate the data.
-        $var->set_source_table('qtype_programmedresp_var',
-            array('question' => backup::VAR_PARENTID));
+        // Get either all vars belonging to the question and the all ones selected
+        // as a linked argument (type = 1)
+        $var->set_source_sql("
+            SELECT DISTINCT var.* 
+              FROM {qtype_programmedresp_var} as var
+             WHERE var.question = ?
+                OR var.id IN (
+                  SELECT arg.value from {qtype_programmedresp_arg} as arg
+                   WHERE arg.question = ?
+                     AND arg.origin = 'linker'
+                     AND arg.type = 1)",
+            array(backup::VAR_PARENTID, backup::VAR_PARENTID));
 
         $concatvar->set_source_sql("
-            SELECT conc.*
-              FROM {qtype_programmedresp_arg} arg
-              JOIN {qtype_programmedresp_conc} conc ON conc.id = arg.value
-             WHERE conc.question = ?
-                   AND arg.type = '3'",
-            array(backup::VAR_PARENTID));
+            SELECT DISTINCT concat.* 
+              FROM {qtype_programmedresp_conc} as concat
+             WHERE concat.question = ?
+                OR concat.id IN (
+                  SELECT arg.value from {qtype_programmedresp_arg} as arg
+                   WHERE arg.question = ?
+                     AND arg.origin = 'linker'
+                     AND arg.type = 3)",
+            array(backup::VAR_PARENTID, backup::VAR_PARENTID));
 
         $arg->set_source_table('qtype_programmedresp_arg',
             array('question' => backup::VAR_PARENTID));

@@ -399,90 +399,33 @@ class qtype_programmedresp_question extends question_graded_automatically {
      */
     function get_exec_arg($arg, $quizid) {
 
-        global $CFG, $DB;
+        global $DB;
 
-        switch ($arg->type) {
-
-            case PROGRAMMEDRESP_ARG_FIXED:
-
-                if (strstr($arg->value, ',')) {
-                    $randomvalues = explode(',', $arg->value);
-                } else {
-                    $randomvalues = array($arg->value);
-                }
-
-                break;
-
-            case PROGRAMMEDRESP_ARG_VARIABLE:
-
-                $randomvalues = $this->varvalues[$arg->value];
-                break;
-
-            case PROGRAMMEDRESP_ARG_CONCAT:
-
-                $concatdata = $this->concatvars[$arg->value];
-
-                $concatvalues = programmedresp_unserialize($concatdata->vars);
-                // To store the concatenated vars
-                $randomvalues = array();
-
-                // $concatvalues conte els noms de les variables que formen la concatenada.
-                // Les variables que la formen pertanyen a la mateixa pregunta que estem responent.
-                // Necessitem els valors aleatoris de cada variable que forma la concatendada.
-                // Getting the random values of each concat var generated on start_attempt().
-                foreach ($concatvalues as $varname) {
-                    // Getting the var id
-                    foreach ($this->vars as $id => $vardata) {
-                        if ($vardata->varname == $varname) {
-                            // El nom de la variable concatendada coincideix amb el nom de la
-                            // variable definida al enunciat.
-                            $varid = $id;
-                        }
-                    }
-                    if (empty($varid)) {
-                        print_error('errorcantfindvar', 'qtype_programmedresp', $varname);
-                    }
-
-                    // get the concret random values
-                    $newrandoms = $this->varvalues[$varid];
-                    $randomvalues = array_merge($randomvalues, $newrandoms);
-                }
-
-                break;
-
-            case PROGRAMMEDRESP_ARG_LINKER:
-                // Getting the argument variable
-                $sql = "SELECT *
-                          FROM {qtype_programmedresp_v_arg} pva
-                         WHERE pva.quizid = ?
-                           AND pva.programmedrespargid = ? ";
-
-                if (!$vardata = $DB->get_record_sql($sql, array($quizid, $arg->id))) {
-                    print_error('errorargumentnoassigned', 'qtype_programmedresp');
-                }
-
-                // To store the values
-                $randomvalues = array();
-
-                // A var
-                if ($vardata->type == 'var') {
-
-                    $random = $DB->get_field('qtype_programmedresp_val', 'varvalues', array('varid' => $vardata->instanceid, 'attemptid' => $this->usageid));
+        if ($arg->origin == 'linker') {
+            switch ($arg->type) {
+                case PROGRAMMEDRESP_ARG_VARIABLE:
+                    $linkervar = $DB->get_records('qtype_programmedresp_var', array(
+                        'id' => $arg->value
+                    ));
+                    $random = $DB->get_field('qtype_programmedresp_val', 'varvalues', array('varid' => $linkervar->id, 'attemptid' => $this->usageid));
                     $randomvalues = programmedresp_unserialize($random);
 
-                    // A concat var
-                } else {
+                    break;
 
-                    $var = $DB->get_record('qtype_programmedresp_conc', array('id' => $vardata->instanceid));
+                case PROGRAMMEDRESP_ARG_CONCAT:
+
+                    $var = $DB->get_record('qtype_programmedresp_conc', array('id' => $arg->value));
                     if (!$var) {
                         print_error('errorargumentnoassigned', 'qtype_programmedresp');
                     }
 
                     // Adding each concatenated variable to $randomvalues
+                    $randomvalues = array();
                     $varnames = programmedresp_unserialize($var->vars);
                     foreach ($varnames as $varname) {
 
                         // Getting the var id ?¿? I'm not sure about this: 'question' => $var->question
+                        //TODO: fer-ho amb una JOIN
                         $varid = $DB->get_field('qtype_programmedresp_var', 'id', array('question' => $var->question, 'varname' => $varname));
 
                         $random = $DB->get_field('qtype_programmedresp_val', 'varvalues', array('varid' => $varid, 'attemptid' => $this->usageid));
@@ -493,9 +436,59 @@ class qtype_programmedresp_question extends question_graded_automatically {
 
                         $randomvalues = array_merge($randomvalues, programmedresp_unserialize($random));
                     }
-                }
 
-                break;
+                    break;
+            }
+        }else {
+            switch ($arg->type) {
+
+                case PROGRAMMEDRESP_ARG_FIXED:
+
+                    if (strstr($arg->value, ',')) {
+                        $randomvalues = explode(',', $arg->value);
+                    } else {
+                        $randomvalues = array($arg->value);
+                    }
+
+                    break;
+
+                case PROGRAMMEDRESP_ARG_VARIABLE:
+
+                    $randomvalues = $this->varvalues[$arg->value];
+                    break;
+
+                case PROGRAMMEDRESP_ARG_CONCAT:
+
+                    $concatdata = $this->concatvars[$arg->value];
+
+                    $concatvalues = programmedresp_unserialize($concatdata->vars);
+                    // To store the concatenated vars
+                    $randomvalues = array();
+
+                    // $concatvalues conte els noms de les variables que formen la concatenada.
+                    // Les variables que la formen pertanyen a la mateixa pregunta que estem responent.
+                    // Necessitem els valors aleatoris de cada variable que forma la concatendada.
+                    // Getting the random values of each concat var generated on start_attempt().
+                    foreach ($concatvalues as $varname) {
+                        // Getting the var id
+                        foreach ($this->vars as $id => $vardata) {
+                            if ($vardata->varname == $varname) {
+                                // El nom de la variable concatendada coincideix amb el nom de la
+                                // variable definida al enunciat.
+                                $varid = $id;
+                            }
+                        }
+                        if (empty($varid)) {
+                            print_error('errorcantfindvar', 'qtype_programmedresp', $varname);
+                        }
+
+                        // get the concret random values
+                        $newrandoms = $this->varvalues[$varid];
+                        $randomvalues = array_merge($randomvalues, $newrandoms);
+                    }
+
+                    break;
+            }
         }
 
         // If 1 is the array size the param type is an integer|float

@@ -83,6 +83,11 @@ class restore_qtype_programmedresp_plugin extends restore_qtype_plugin {
         $questioncreated = $this->get_mappingid('question_created', $oldquestionid) ?
             true : false;
 
+        // Si la variable ha estat insertada previament (per la qtype-linkerdesc se suposa)
+        // no l'hem d'insertar.
+        if ($newvarid = $this->get_mappingid('var', $oldid)){
+            return true;
+        }
         // If the question has been created by restore, we need to create its
         // vars too.
         if ($questioncreated) {
@@ -111,6 +116,9 @@ class restore_qtype_programmedresp_plugin extends restore_qtype_plugin {
         $questioncreated = $this->get_mappingid('question_created', $oldquestionid) ?
             true : false;
 
+        if ($newconcatid = $this->get_mappingid('concatvar', $oldid)){
+            return true;
+        }
         // If the question has been created by restore, we need to create its
         // concatenated vars too.
         if ($questioncreated) {

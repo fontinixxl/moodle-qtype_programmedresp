@@ -162,7 +162,7 @@ function programmedresp_get_var_fields() {
 function programmedresp_get_argtypes_mapping() {
 
     return array(PROGRAMMEDRESP_ARG_FIXED => 'fixed',
-        PROGRAMMEDRESP_ARG_VARIABLE => 'var',
+        PROGRAMMEDRESP_ARG_VARIABLE => 'variable', //TODO: canviar a var (variable es català)
         PROGRAMMEDRESP_ARG_CONCAT => 'concat',
         PROGRAMMEDRESP_ARG_LINKER => 'linker');
 }
@@ -490,11 +490,11 @@ function programmedresp_get_linkerdesc_vars($quizid) {
     // 4-> Join vars and concatvars to be returned all together.
     $linkeroptions = array();
     foreach ($linkervars as $linkervar) {
-        $linkeroptions['var_' . $linkervar->id] = $linkervar->varname . ' (' . get_string('vartypevar', 'qtype_programmedresp') . ')';
+        $linkeroptions['variable_' . $linkervar->id] = $linkervar->varname . ' (' . get_string('vartypevar', 'qtype_programmedresp') . ')';
     }
     if ($linkerconcatvars) {
         foreach ($linkerconcatvars as $var) {
-            $linkeroptions['concatvar_' . $var->id] = $var->readablename . ' (' . get_string('vartypeconcatvar', 'qtype_programmedresp') . ')';
+            $linkeroptions['concat_' . $var->id] = $var->readablename . ' (' . get_string('vartypeconcatvar', 'qtype_programmedresp') . ')';
         }
     }
 

@@ -197,8 +197,11 @@ class prgrammedresp_output {
 
                 // If there are previous data and it is the selected argument type: selected
                 $selectedstr = '';
-                if ($args && $args[$key]->type == $argid) {
-                    $selectedstr = 'selected="selected"';
+                if ($args) {
+                    if (($args[$key]->origin == 'linker' && $argid == PROGRAMMEDRESP_ARG_LINKER) ||
+                        ($args[$key]->origin == 'local' && $args[$key]->type == $argid)) {
+                        $selectedstr = 'selected="selected"';
+                    }
                 }
 
                 $paramelement.= '<option value="' . $argid . '" ' . $selectedstr . '>' . get_string('arg' . $argname, 'qtype_programmedresp') . '</option>';
@@ -220,26 +223,24 @@ class prgrammedresp_output {
             if (!$args) {
                 $fixedclass = '';
             } else {
-                if ($args[$key]->type == PROGRAMMEDRESP_ARG_FIXED) {
+                // TODO: Refactor first condition with previous condition
+                if ($args[$key]->origin == 'local' && $args[$key]->type == PROGRAMMEDRESP_ARG_FIXED) {
                     $fixedvalue = $args[$key]->value;
                     $fixedclass = '';
-                } else if ($args[$key]->type == PROGRAMMEDRESP_ARG_VARIABLE) {
+                } else if ($args[$key]->origin == 'local' && $args[$key]->type == PROGRAMMEDRESP_ARG_VARIABLE) {
                     $variablevalue = $vars[$args[$key]->value]->varname;
                     $variableclass = '';
-                } else if ($args[$key]->type == PROGRAMMEDRESP_ARG_CONCAT) {
+                } else if ($args[$key]->origin == 'local' && $args[$key]->type == PROGRAMMEDRESP_ARG_CONCAT) {
                     $concatdata = programmedresp_get_concatvar_data($args[$key]->value);
                     $concatvalue = $concatdata->name;
                     $concatclass = '';
-                } else if ($args[$key]->type == PROGRAMMEDRESP_ARG_LINKER && $linkervars) {
+                } else if ($args[$key]->origin == 'linker' && $linkervars) {
 
                     $linkerclass = '';
-                    // Get the previous selected linker var if it was.
-                    if ($vararg = $DB->get_record('qtype_programmedresp_v_arg',
-                            array('quizid' => $quizid, 'programmedrespargid' => $args[$key]->id))) {
+                    // Get the previous selected linker var if it was set.
 
-                        // Assign the previous selected linkervar
-                        $linkervalue = $linkervars[$vararg->type . '_' . $vararg->instanceid];
-                    } else {
+                    // Assign the previous selected linkervar
+                    if (!$linkervalue = $linkervars[$argtypes[$args[$key]->type]. '_' . $args[$key]->value]) {
                         $linkerclass = "redtext";
                     }
                 }
@@ -277,9 +278,9 @@ class prgrammedresp_output {
             // Linkerdesc variables
             if ($linkervars) {
                 $paramelement.= '<select name="linker_' . $key . '" id="id_argument_linker_' . $key . '" class="' . $linkerclass . '">';
-                // It can be empty either when restor a quiz with linkervars or
-                // when we fill arg as linker on quiz context outside.
+                // It can be empty when we fill linker arg from outside of quiz context.
                 if (empty($linkervalue)) {
+                    // TODO: put hardcoded text to lang folder.
                     $paramelement.= "<option disabled selected value> -- select an option -- </option>";
                 }
                 foreach ($linkervars as $varid => $varname) {
