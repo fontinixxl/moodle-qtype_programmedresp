@@ -407,6 +407,7 @@ class qtype_programmedresp_question extends question_graded_automatically {
                     $linkervar = $DB->get_records('qtype_programmedresp_var', array(
                         'id' => $arg->value
                     ));
+                    
                     $random = $DB->get_field('qtype_programmedresp_val', 'varvalues', array('varid' => $linkervar->id, 'attemptid' => $this->usageid));
                     $randomvalues = programmedresp_unserialize($random);
 

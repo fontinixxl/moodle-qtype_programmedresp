@@ -239,9 +239,12 @@ class prgrammedresp_output {
                     $linkerclass = '';
                     // Get the previous selected linker var if it was set.
 
-                    // Assign the previous selected linkervar
-                    if (!$linkervalue = $linkervars[$argtypes[$args[$key]->type]. '_' . $args[$key]->value]) {
-                        $linkerclass = "redtext";
+                    // Assign the previous selected linkervar if it was assing.
+                    if (isset($args[$key]->type) && isset($args[$key]->value)) {
+                        if (!$linkervalue = $linkervars[$argtypes[$args[$key]->type]. '_' . $args[$key]->value]) {
+                            $linkerclass = "redtext";
+                        }
+
                     }
                 }
             }

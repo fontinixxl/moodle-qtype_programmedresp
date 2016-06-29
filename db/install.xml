@@ -87,16 +87,14 @@
                 <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
                 <FIELD NAME="question" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
                 <FIELD NAME="argkey" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
-                <FIELD NAME="type" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="1" SEQUENCE="false"/>
-                <FIELD NAME="value" TYPE="char" LENGTH="255" NOTNULL="false" SEQUENCE="false" COMMENT="Char type, but supports both string (varname) and float (fixed value)"/>
+                <FIELD NAME="origin" TYPE="char" LENGTH="8" NOTNULL="true" DEFAULT="local" SEQUENCE="false"
+                       COMMENT="Indica la procedencia de la variable assignada a l'argument. Pot ser local (de la propia pregunta) o linker (variable global)."/>
+                <FIELD NAME="type" TYPE="int" LENGTH="1" NOTNULL="false" DEFAULT="1" SEQUENCE="false"/>
+                <FIELD NAME="value" TYPE="char" LENGTH="255" NOTNULL="false" SEQUENCE="false" COMMENT="Char type, but supports both string (varid) and float (fixed value)"/>
             </FIELDS>
             <KEYS>
                 <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
             </KEYS>
-            <INDEXES>
-                <INDEX NAME="question_type" UNIQUE="false" FIELDS="question, type"/>
-                <INDEX NAME="question_argkey" UNIQUE="false" FIELDS="question, argkey"/>
-            </INDEXES>
         </TABLE>
         <TABLE NAME="qtype_programmedresp_resp" COMMENT="The description of each programmed response">
             <FIELDS>

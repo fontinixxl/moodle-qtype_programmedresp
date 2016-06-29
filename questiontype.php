@@ -148,22 +148,24 @@ class qtype_programmedresp extends question_type {
                 // Store the arg number.
                 $argobj->argkey = intval(substr($varname, 8));  // integer
 
-                $argobj->origin = 'local';
-                if (PROGRAMMEDRESP_ARG_LINKER === intval($value)) {
-                    $argobj->origin = 'linker';
-                }
-                $argobj->type = intval($value);
+                // Assignem procedencia de l'argument
+                $argobj->origin = (PROGRAMMEDRESP_ARG_LINKER == intval($value))
+                    ? 'linker' : 'local';
 
-                // There is a form element for each var type (fixed, variable, concat, linkerdesc)
-                // $argvalue contains the id of the selected var.
-                // for linker var the arg value is like this: {var|concat}_varnum:
-                // Example:
-                //  - var_12
-                //  - concat_1
                 $argname = $argtypesmapping[intval($value)] . "_" . $argobj->argkey;
+                // $argvalue contains the id of the selected var.
                 $argvalue = optional_param($argname, false, PARAM_ALPHANUMEXT);
 
-                $argobj->value = clean_param($argvalue, PARAM_TEXT);  // integer or float if it's fixed or a varname
+                // Si l'argument es linker i no existeix cap variable, vol dir que o be
+                // estem guardant del question bank o be que no hi ha variables linker.
+                // En tot cas, no hem de guardar ni type ni valor
+                if ($argvalue) {
+                    $argobj->type = intval($value);
+                    $argobj->value = clean_param($argvalue, PARAM_TEXT);  // integer or float if it's fixed or a varname
+                } else {
+                    $argobj->type = NULL;
+                    $argobj->value = '';
+                }
 
                 $args[$i] = $argobj;
                 $i++;
@@ -262,14 +264,16 @@ class qtype_programmedresp extends question_type {
                     $arg->value = $concatvars[$arg->value]->id;
                 }
                 // The linkervardata is like this: {var|concat}_varid
-                if ($arg->origin == 'linker') {
+                // En el cas que crem/editem una pregunta des del question bank, no hem d'assignar
+                // type ni value, ja que no en tindrà.
+                if ($arg->origin == 'linker' && !empty($arg->value)) {
                     // Obtenim array on el primer index (0) conté el tipus de variable i el
                     // segon (1) conté el id de la variable.
                     $linkervardata = explode('_', $arg->value);
                     // Intercanviem clau (int identifica el tipus de variable)
                     // per valor (string tipus de variable). Això ho fem per obtenir directe
                     // el int que identifica el tipus de variable (concat o var).
-                    $argtypeflipped= array_flip($argtypesmapping);
+                    $argtypeflipped = array_flip($argtypesmapping);
                     // Ens quedem el integer que identifica el tipus de variable.
                     $arg->type = $argtypeflipped[$linkervardata[0]];
                     $arg->value = $linkervardata[1]; // get only the id of the var.
@@ -283,7 +287,7 @@ class qtype_programmedresp extends question_type {
                         print_error('errordb', 'qtype_programmedresp');
                     }
 
-                    // Insert
+                // Insert
                 } else {
                     if (!$arg->id = $DB->insert_record('qtype_programmedresp_arg', $arg, true)) {
                         print_error('errordb', 'qtype_programmedresp');
@@ -291,16 +295,16 @@ class qtype_programmedresp extends question_type {
                 }
 
                 // If it's a linkerdesc it must be stored with thmpte selected var
-                if (!empty($linkervararg[$argkey]) && $arg->type == PROGRAMMEDRESP_ARG_LINKER) {
-                    $linkervararg[$argkey]->programmedrespargid = $arg->id;
-
-                    if ($linkervararg[$argkey]->id = $DB->get_field('qtype_programmedresp_v_arg', 'id', array(
-                        'quizid' => $question->quizid, 'programmedrespargid' => $arg->id))) {
-                        $DB->update_record('qtype_programmedresp_v_arg', $linkervararg[$argkey]);
-                    } else {
-                        $DB->insert_record('qtype_programmedresp_v_arg', $linkervararg[$argkey]);
-                    }
-                }
+//                if (!empty($linkervararg[$argkey]) && $arg->type == PROGRAMMEDRESP_ARG_LINKER) {
+//                    $linkervararg[$argkey]->programmedrespargid = $arg->id;
+//
+//                    if ($linkervararg[$argkey]->id = $DB->get_field('qtype_programmedresp_v_arg', 'id', array(
+//                        'quizid' => $question->quizid, 'programmedrespargid' => $arg->id))) {
+//                        $DB->update_record('qtype_programmedresp_v_arg', $linkervararg[$argkey]);
+//                    } else {
+//                        $DB->insert_record('qtype_programmedresp_v_arg', $linkervararg[$argkey]);
+//                    }
+//                }
             }
         }
 
