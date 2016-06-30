@@ -48,7 +48,7 @@ function xmldb_qtype_programmedresp_upgrade($oldversion) {
         }
 
         // 'type' ara pot ser NULL (quan editem un pregunta desde question bank)
-        $field = new xmldb_field('type', XMLDB_TYPE_INTEGER, '1', null, null, null, '1', 'origin');
+        $field = new xmldb_field('type', XMLDB_TYPE_INTEGER, '1', null, null, null, '1');
         $dbman->change_field_type($table, $field);
 
         // Afegim nom camp origin
