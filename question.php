@@ -404,10 +404,9 @@ class qtype_programmedresp_question extends question_graded_automatically {
         if ($arg->origin == 'linker') {
             switch ($arg->type) {
                 case PROGRAMMEDRESP_ARG_VARIABLE:
-                    $linkervar = $DB->get_records('qtype_programmedresp_var', array(
+                    $linkervar = $DB->get_record('qtype_programmedresp_var', array(
                         'id' => $arg->value
                     ));
-                    
                     $random = $DB->get_field('qtype_programmedresp_val', 'varvalues', array('varid' => $linkervar->id, 'attemptid' => $this->usageid));
                     $randomvalues = programmedresp_unserialize($random);
 
