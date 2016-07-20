@@ -20,7 +20,7 @@
  *
  * @package    qtype
  * @subpackage programmedresp
- * @copyright 2016 Gerard Cuello (gerard.urv@gmail.com)
+ * @copyright  2016 Gerard Cuello (gerard.urv@gmail.com)
 
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -29,6 +29,8 @@ defined('MOODLE_INTERNAL') || die();
 require_once($CFG->libdir . '/questionlib.php');
 require_once($CFG->dirroot . '/question/engine/lib.php');
 require_once($CFG->dirroot . '/question/type/programmedresp/question.php');
+// We're gonna need this file for qtype_numerical_answer_processor class.
+require_once($CFG->dirroot . '/question/type/numerical/questiontype.php');
 
 /**
  * The programmedresp question type.
@@ -72,23 +74,27 @@ class qtype_programmedresp extends question_type {
      */
     public function get_question_options($question) {
         global $DB;
-        parent::get_question_options($question);
-        $question->options->programmedresp = $DB->get_record('qtype_programmedresp',
-                array('question' => $question->id));
-        if (!$question->options->programmedresp) {
+
+        $firstload = parent::get_question_options($question);
+        if (false === $firstload) {
             return false;
         }
-        //TODO: create $question->options object as new stdClass() ???
+
         $question->options->vars = $DB->get_records('qtype_programmedresp_var',
                 array('question' => $question->id));
         $question->options->concatvars = $DB->get_records('qtype_programmedresp_conc',
                 array('question' => $question->id));
-        $question->options->args = $DB->get_records('qtype_programmedresp_arg',
-                array('question' => $question->id), 'argkey ASC', 'argkey, id, origin, type, value');
-        $question->options->responses = $DB->get_records('qtype_programmedresp_resp',
-                array('question' => $question->id), 'returnkey ASC', 'returnkey, label');
         $question->options->function = $DB->get_record('qtype_programmedresp_f',
-                array('id' => $question->options->programmedrespfid));
+            array('id' => $question->options->programmedrespfid));
+
+        if (!empty($question->options->function)) {
+            $question->options->args = $DB->get_records('qtype_programmedresp_arg',
+                    array('question' => $question->id), 'argkey ASC', 'argkey, id, origin, type, value');
+            $question->options->responses = $DB->get_records('qtype_programmedresp_resp',
+                    array('question' => $question->id), 'returnkey ASC', 'returnkey, label');
+        }
+
+        return true;
     }
 
     /**
@@ -105,6 +111,7 @@ class qtype_programmedresp extends question_type {
         $question->function = $questiondata->options->function;
         // Response options
         $question->respfields = $questiondata->options->responses;
+        $question->ap = new qtype_numerical_answer_processor(array());
     }
 
     /**
@@ -336,13 +343,6 @@ class qtype_programmedresp extends question_type {
             return false;
         }
 
-        // Delete all argument associations with global vars (linkerdesc).
-        if ($args = $DB->get_records('qtype_programmedresp_arg', array(
-            'question' => $questionid, 'type' => PROGRAMMEDRESP_ARG_LINKER))) {
-            foreach ($args as $arg) {
-                $DB->delete_records('qtype_programmedresp_v_arg', array('programmedrespargid' => $arg->id));
-            }
-        }
         // Delete args
         $DB->delete_records('qtype_programmedresp_arg', array('question' => $questionid));
         // Delete responses

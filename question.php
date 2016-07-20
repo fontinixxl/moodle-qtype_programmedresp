@@ -42,23 +42,17 @@ require_once($CFG->dataroot . '/qtype_programmedresp.php');
  */
 class qtype_programmedresp_question extends question_graded_automatically {
 
-    /**
-     *
-     * @var int the unique id that identify an attempt.
-     */
+     /** @var int the unique id that identify an attempt. */
     public $usageid = null;
 
-    /**
-     *
-     * @var array stores the correct answers for this question.
-     */
+    /** @var array stores the correct answers for this question. */
     public $answers = null;
 
-    /**
-     *
-     * @var array with the random values of the variables of this question.
-     */
+    /** @var array with the random values of the variables of this question. */
     public $varvalues = array();
+
+    /** @var qtype_numerical_answer_processor */
+    public $ap;
 
     /**
      * Start a new attempt at this question, storing any information that will
@@ -157,18 +151,6 @@ class qtype_programmedresp_question extends question_graded_automatically {
         return $expected;
     }
 
-    /**
-     * In situations where is_gradable_response() returns false, this method
-     * should generate a description of what the problem is.
-     * @return string the message.
-     */
-    public function get_validation_error(array $response) {
-        if (!$this->is_gradable_response($response)) {
-            return get_string('pleaseenterananswer', 'qtype_numerical');
-        }
-        // TODO: add validation for thousands separators
-        return '';
-    }
 
     /**
      * What data would need to be submitted to get this question correct.
@@ -217,8 +199,26 @@ class qtype_programmedresp_question extends question_graded_automatically {
                 return false;
             }
         }
-        // Return true whether all responses exist and there are not false
+        // Return true if all responses have a valid value otherwise return false.
         return true;
+    }
+
+    /**
+     * TODO: Phpdoc
+     *
+     * @param $response
+     * @param bool $returnerr
+     * @return array
+     */
+    public function contains_thousands_seaparator($response) {
+        foreach ($this->respfields as $respfield) {
+            $respindex = $this->field($respfield->returnkey);
+            if ($this->ap->contains_thousands_seaparator($response[$respindex])) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**
@@ -235,9 +235,30 @@ class qtype_programmedresp_question extends question_graded_automatically {
             return false;
         }
 
-        // TODO: Add some extra testing cases like thousands separator
-        // See {@link qtype_numerical_question::is_complete_response}
+        if ($this->contains_thousands_seaparator($response)) {
+            return false;
+        }
+
         return true;
+    }
+
+    /**
+     * In situations where is_gradable_response() returns false, this method
+     * should generate a description of what the problem is.
+     * @return string the message.
+     */
+    public function get_validation_error(array $response) {
+        if (!$this->is_gradable_response($response)) {
+            return get_string('pleaseenterananswer', 'qtype_numerical');
+        }
+
+        if ($this->contains_thousands_seaparator($response)) {
+            return get_string('pleaseenteranswerwithoutthousandssep', 'qtype_numerical',
+                $this->ap->get_separator());
+        }
+
+
+        return '';
     }
 
     /**

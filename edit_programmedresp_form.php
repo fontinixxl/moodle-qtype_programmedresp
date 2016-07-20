@@ -28,33 +28,31 @@ defined('MOODLE_INTERNAL') || die();
 require_once($CFG->dirroot . '/question/type/edit_question_form.php');
 require_once($CFG->dirroot . '/question/type/programmedresp/lib.php');
 require_once($CFG->dirroot . '/question/type/programmedresp/programmedresp_output.class.php');
+// We're gonna need this file for qtype_numerical_answer_processor class.
+require_once($CFG->dirroot . '/question/type/numerical/questiontype.php');
 
 /**
- * programmedresp question editing form definition.
+ * Programmedresp question editing form definition.
  *
  * @copyright 2016 Gerard Cuello (gerard.urv@gmail.com)
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class qtype_programmedresp_edit_form extends question_edit_form {
 
-    /**
-     *
-     * @var int default to -1 to indicate which isn't in a quiz context.
-     */
+    /** @var int default to -1 to indicate we aren't in a quiz context. */
     private $quizid;
 
     public function __construct($submiturl, $question, $category, $contexts, $formeditable = true) {
 
-        $islinkerinstalled= is_qtype_linkerdesc_installed();
+        $islinkerinstalled = is_qtype_linkerdesc_installed();
         $cmid = optional_param('cmid', 0, PARAM_INT);
 
-        // Initialize quiz id with:
-        //  > '-1' to indicate we aren't in a quiz context or :
-        //  > valid quiz id from course module (cm).
+        // Initialize quiz id to:
+        //  a) '-1' to indicate we aren't in a quiz context or :
+        //  b) a valid quiz id from course module (cm).
         $islinkerinstalled && $cmid && ($id = programmedresp_getquiz_from_cm($cmid));
         $this->quizid = (empty($id)) ? NO_CONTEXT_QUIZ : $id;
 
-        // TODO: provar d'afegir el quizid a $question: $question->quizid = quizid;
         parent::__construct($submiturl, $question, $category, $contexts, $formeditable);
     }
 
@@ -166,8 +164,8 @@ class qtype_programmedresp_edit_form extends question_edit_form {
 
         // Arguments
         $mform->addElement('html', '<div id="id_programmedrespfid_content">');
-        if (!empty($this->question->id) && $this->question->options->function) {
-            $outputmanager->display_args($this->question->options->function->id,
+        if (!empty($this->question->id) && isset($this->question->options->function)) {
+            $outputmanager->display_args($this->question->options->programmedrespfid,
                     $this->question->questiontext, $this->question->options->args,
                     $this->question->options->vars, $this->quizid);
         }
@@ -208,6 +206,53 @@ class qtype_programmedresp_edit_form extends question_edit_form {
     }
 
     /**
+     * TODO: Tal com estan dissenyats els formularis es dificil validar cada camp
+     * de les variables, ja que tocaria recorrer tots els camps, indentificar el tipus
+     * (increment, max,..) i validar-lo. Es ineficient ja que no estan agrupats els inputs.
+     * A diferencia de les numeriques. La idea seria tenir algo així:
+     *   - increment[n], max[n], on 'n' representa el numero de variables generades.
+     * Cada posició ('n') equivaldria a una variable. D'aquesta manera podriem fer:
+     *   $increment = $fromform->increment;
+     *   foreach ($increment as $var => value) {
+     *       ... validar el increment.
+     *
+     * @param array $fromform
+     * @param array $files
+     * @return array
+     */
+    public function validation($fromform, $files) {
+        $errors = parent::validation($fromform, $files);
+        //$data = $this->get_varval_fields_fromform($fromform);
+        //$errors = $this->validate_variable_values($data, $errors);
+
+        return $errors;
+    }
+
+    /**
+     * From all data send from form take only those related with variable
+     * fields which must be validated.
+     *
+     * @param $fromform array (filedname => value) of submitted data from form.
+     * @return $varfields array of ("fieldname" => "value") with only those
+     * data related to variable fields, such as 'increment', 'max', 'min', etc.
+     */
+    private function get_varval_fields_fromform($fromform) {
+        // TODO: refactor required!
+        return true;
+    }
+    /**
+     * Validate the variable values options (number of values, min, max, increment).
+     *
+     * @param array $data the submitted data.
+     * @param array $errors the errors array to add to.
+     * @return array the updated errors array.
+     */
+    public function validate_variable_values($data, $errors) {
+        // TODO: refactor required!
+        return true;
+    }
+
+    /**
      * Perform an preprocessing needed on the data passed to {@link set_data()}
      * before it is used to initialise the form.
      * @param object $question the data being passed to the form.
@@ -221,14 +266,17 @@ class qtype_programmedresp_edit_form extends question_edit_form {
             $question = (object) array_merge((array) $question, (array) $vars);
 
             // Function
-            $question->functioncategory = $question->options->function->programmedrespfcatid;
-            $question->programmedrespfid = $question->options->function->id;
+            if (!empty($question->options->programmedrespfid)) {
+                $question->functioncategory = $question->options->function->programmedrespfcatid;
+                $question->programmedrespfid = $question->options->programmedrespfid;
 
-            // Function responses
-            foreach ($question->options->responses as $returnkey => $resp) {
-                $fieldname = 'resp_' . $returnkey;
-                $question->{$fieldname} = $resp->label;
+                // Function responses
+                foreach ($question->options->responses as $returnkey => $resp) {
+                    $fieldname = 'resp_' . $returnkey;
+                    $question->{$fieldname} = $resp->label;
+                }
             }
+
         }
 
         return $question;
