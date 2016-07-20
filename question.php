@@ -405,6 +405,7 @@ class qtype_programmedresp_question extends question_graded_automatically {
         if (!is_array($results)) {
             $results = array($results);
         }
+        print_object($results);
 
         return $results;
     }
