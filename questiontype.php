@@ -162,11 +162,11 @@ class qtype_programmedresp extends question_type {
                 $argname = $argtypesmapping[intval($value)] . "_" . $argobj->argkey;
                 // $argvalue contains the id of the selected var.
                 $argvalue = optional_param($argname, false, PARAM_ALPHANUMEXT);
-
+                print_object($argvalue);
                 // Si l'argument es linker i no existeix cap variable, vol dir que o be
                 // estem guardant del question bank o be que no hi ha variables linker.
                 // En tot cas, no hem de guardar ni type ni valor
-                if ($argvalue) {
+                if (isset($argvalue)) {
                     $argobj->type = intval($value);
                     $argobj->value = clean_param($argvalue, PARAM_TEXT);  // integer or float if it's fixed or a varname
                 } else {
