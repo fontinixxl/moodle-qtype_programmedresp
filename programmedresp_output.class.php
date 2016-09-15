@@ -113,7 +113,7 @@ class prgrammedresp_output {
         }
 
         // Functions
-        $options = array('0' => ' (' . get_string("selectfunction", "qtype_programmedresp") . ') ');
+        //$options = array('0' => ' (' . get_string("selectfunction", "qtype_programmedresp") . ') ');
         if (!empty($functions)) {
             foreach ($functions as $function) {
                 $options[$function->id] = $function->name;
@@ -121,7 +121,7 @@ class prgrammedresp_output {
         }
 
         $attrs['onchange'] = 'return display_args(this);';
-        $this->print_form_select(get_string('function', 'qtype_programmedresp'), 'programmedrespfid', $options, $attrs);
+        $this->print_form_select(get_string('function', 'qtype_programmedresp'), 'programmedrespfid', $options, $attrs, true);
     }
 
     /**
@@ -159,7 +159,7 @@ class prgrammedresp_output {
         // Map arg type id => arg type name (fixed, variable or linker)
         $argtypes = programmedresp_get_argtypes_mapping();
 
-        // Get the linkerdesc vars only if a valid quizid is passed
+        // Get the linkerdesc vars only if a valid quizid is given
         $linkervars = programmedresp_get_linkerdesc_vars($quizid);
 
         $this->print_form_htmlraw('<br/><div class="programmedresp_functiondescription">' . stripslashes(format_text($functiondata->description, FORMAT_MOODLE)) . '</div>');
@@ -353,8 +353,11 @@ class prgrammedresp_output {
         $this->mform->addElement('html', $text);
     }
 
-    function print_form_select($title, $elementname, $options, $attrs = false) {
+    function print_form_select($title, $elementname, $options, $attrs = false, $required = false) {
         $this->mform->addElement('select', $elementname, $title, $options, $attrs);
+        if ($required) {
+            $this->mform->addRule($elementname, null, 'required', 'client');
+        }
     }
 
     function print_form_spacer() {

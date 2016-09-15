@@ -81,18 +81,19 @@ class qtype_programmedresp extends question_type {
         }
 
         $question->options->vars = $DB->get_records('qtype_programmedresp_var',
-                array('question' => $question->id));
+            array('question' => $question->id));
+
         $question->options->concatvars = $DB->get_records('qtype_programmedresp_conc',
-                array('question' => $question->id));
+            array('question' => $question->id));
+
         $question->options->function = $DB->get_record('qtype_programmedresp_f',
             array('id' => $question->options->programmedrespfid));
 
-        if (!empty($question->options->function)) {
-            $question->options->args = $DB->get_records('qtype_programmedresp_arg',
-                    array('question' => $question->id), 'argkey ASC', 'argkey, id, origin, type, value');
-            $question->options->responses = $DB->get_records('qtype_programmedresp_resp',
-                    array('question' => $question->id), 'returnkey ASC', 'returnkey, label');
-        }
+        $question->options->args = $DB->get_records('qtype_programmedresp_arg',
+            array('question' => $question->id), 'argkey ASC', 'argkey, id, origin, type, value');
+
+        $question->options->responses = $DB->get_records('qtype_programmedresp_resp',
+            array('question' => $question->id), 'returnkey ASC', 'returnkey, label');
 
         return true;
     }
@@ -103,14 +104,17 @@ class qtype_programmedresp extends question_type {
      * @param object $questiondata the question data loaded from the database.
      */
     protected function initialise_question_instance(\question_definition $question, $questiondata) {
+
         parent::initialise_question_instance($question, $questiondata);
-        $question->vars = ($questiondata->options->vars) ? $questiondata->options->vars : array();
+
+        $question->vars = $questiondata->options->vars;
         // Only programmedresp qtype
-        $question->concatvars = ($questiondata->options->concatvars) ? $questiondata->options->concatvars : array();
+        $question->concatvars = $questiondata->options->concatvars;
         $question->args = $questiondata->options->args;
         $question->function = $questiondata->options->function;
         // Response options
         $question->respfields = $questiondata->options->responses;
+
         $question->ap = new qtype_numerical_answer_processor(array());
     }
 
@@ -125,7 +129,10 @@ class qtype_programmedresp extends question_type {
      */
     public function save_question_options($question) {
         global $DB;
+
+        $question->programmedrespfid = required_param('programmedrespfid', PARAM_INT);
         parent::save_question_options($question);
+
         $programmedresp = $DB->get_record('qtype_programmedresp',
                 array('question' => $question->id));
 

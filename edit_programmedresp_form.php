@@ -42,7 +42,15 @@ class qtype_programmedresp_edit_form extends question_edit_form {
     /** @var int default to -1 to indicate we aren't in a quiz context. */
     private $quizid;
 
+    private $functionid;
+
+    private $functioncategoryid;
+
+    private $questiontextvars;
+
     public function __construct($submiturl, $question, $category, $contexts, $formeditable = true) {
+
+        parent::__construct($submiturl, $question, $category, $contexts, $formeditable);
 
         $islinkerinstalled = is_qtype_linkerdesc_installed();
         $cmid = optional_param('cmid', 0, PARAM_INT);
@@ -53,11 +61,15 @@ class qtype_programmedresp_edit_form extends question_edit_form {
         $islinkerinstalled && $cmid && ($id = programmedresp_getquiz_from_cm($cmid));
         $this->quizid = (empty($id)) ? NO_CONTEXT_QUIZ : $id;
 
-        parent::__construct($submiturl, $question, $category, $contexts, $formeditable);
+
     }
 
     protected function definition_inner($mform) {
         global $CFG, $DB, $PAGE;
+
+        $this->functioncategoryid = (!empty($this->question->options->function))
+            ? $this->question->options->function->programmedrespfcatid
+            : false;
 
         $PAGE->requires->js('/question/type/programmedresp/script.js');
 
@@ -69,7 +81,7 @@ class qtype_programmedresp_edit_form extends question_edit_form {
         "//]]></script>\n";
 
         $mform->addElement('hidden', 'quizid', $this->quizid);
-        $mform->setType('quizid', PARAM_INT);
+        $mform->setType(' quizid', PARAM_INT);
 
         // TODO: Refacor it with something more clean
         // context id will be required on contents.php once it will called by AJAX (script.js)
@@ -127,10 +139,10 @@ class qtype_programmedresp_edit_form extends question_edit_form {
                 get_string('functioncategory', 'qtype_programmedresp'), $catoptions, $catattrs);
 
         // Dirty hack to add the function (added later through ajax)
-        if (empty($this->question->id)) {
-            $mform->addElement('hidden', 'programmedrespfid');
-            $mform->setType('programmedrespfid', PARAM_INT);
-        }
+//        if (empty($this->question->id)) {
+//            $mform->addElement('hidden', 'programmedrespfid');
+//            $mform->setType('programmedrespfid', PARAM_INT);
+//        }
 
         // Link to add a category
         $caneditfunctions = has_capability('moodle/question:config', context_system::instance());
@@ -143,9 +155,7 @@ class qtype_programmedresp_edit_form extends question_edit_form {
 
         // Function list
         $mform->addElement('html', '<div id="id_functioncategory_content">');
-        if (!empty($this->question->id) && $this->question->options->function) {
-            $outputmanager->display_functionslist($this->question->options->function->programmedrespfcatid);
-        }
+        $outputmanager->display_functionslist($this->functioncategoryid);
         $mform->addElement('html', '</div>');
 
         // Link to add a function
@@ -154,7 +164,7 @@ class qtype_programmedresp_edit_form extends question_edit_form {
 
             // If it's a function edition we should add the selected category id
             if (!empty($this->question->id) && $this->question->options->function) {
-                $addfunctionsurl .= '&fcatid=' . $this->question->options->function->programmedrespfcatid;
+                $addfunctionsurl .= '&fcatid=' . $this->functioncategoryid;
             }
 
             $onclick = "window.open(this.href, this.target, 'menubar=0,location=0,scrollbars,resizable,width=650,height=600', true);return false;";
@@ -164,7 +174,7 @@ class qtype_programmedresp_edit_form extends question_edit_form {
 
         // Arguments
         $mform->addElement('html', '<div id="id_programmedrespfid_content">');
-        if (!empty($this->question->id) && isset($this->question->options->function)) {
+        if (!empty($this->question->id) && !empty($this->question->options->function)) {
             $outputmanager->display_args($this->question->options->programmedrespfid,
                     $this->question->questiontext, $this->question->options->args,
                     $this->question->options->vars, $this->quizid);
@@ -220,13 +230,13 @@ class qtype_programmedresp_edit_form extends question_edit_form {
      * @param array $files
      * @return array
      */
-    public function validation($fromform, $files) {
-        $errors = parent::validation($fromform, $files);
-        //$data = $this->get_varval_fields_fromform($fromform);
-        //$errors = $this->validate_variable_values($data, $errors);
-
-        return $errors;
-    }
+//    public function validation($fromform, $files) {
+//        $errors = parent::validation($fromform, $files);
+//        //$data = $this->get_varval_fields_fromform($fromform);
+//        //$errors = $this->validate_variable_values($data, $errors);
+//
+//        return $errors;
+//    }
 
     /**
      * From all data send from form take only those related with variable
