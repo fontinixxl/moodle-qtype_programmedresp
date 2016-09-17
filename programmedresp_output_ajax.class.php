@@ -90,7 +90,7 @@ class programmedresp_output_ajax extends prgrammedresp_output {
     function print_form_select($title, $elementname, $options, $attrs = false) {
 
         echo '<div class="fitem"><div class="fitemtitle">'.$title.'</div><div class="felement fselect">';
-        echo '<select name="'.$elementname.'" id="id_'.$elementname.'" ';
+        echo '<select required name="'.$elementname.'" id="id_'.$elementname.'" ';
         if ($attrs) {
             foreach ($attrs as $attrname => $attrvalue) {
                 echo $attrname.'="'.$attrvalue.'"';
@@ -98,6 +98,7 @@ class programmedresp_output_ajax extends prgrammedresp_output {
         }
         echo '>';
 
+        echo '<option value=""> (' . get_string("selectfunction", "qtype_programmedresp") . ') </option>';
         foreach ($options as $key => $option) {
             echo '<option value="'.$key.'">'.$option.'</option>';
         }

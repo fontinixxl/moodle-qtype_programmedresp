@@ -112,8 +112,8 @@ class prgrammedresp_output {
             }
         }
 
+        $options = array();
         // Functions
-        //$options = array('0' => ' (' . get_string("selectfunction", "qtype_programmedresp") . ') ');
         if (!empty($functions)) {
             foreach ($functions as $function) {
                 $options[$function->id] = $function->name;
@@ -121,7 +121,7 @@ class prgrammedresp_output {
         }
 
         $attrs['onchange'] = 'return display_args(this);';
-        $this->print_form_select(get_string('function', 'qtype_programmedresp'), 'programmedrespfid', $options, $attrs, true);
+        $this->print_form_select(get_string('function', 'qtype_programmedresp'), 'programmedrespfid', $options, $attrs);
     }
 
     /**
@@ -353,11 +353,16 @@ class prgrammedresp_output {
         $this->mform->addElement('html', $text);
     }
 
-    function print_form_select($title, $elementname, $options, $attrs = false, $required = false) {
-        $this->mform->addElement('select', $elementname, $title, $options, $attrs);
-        if ($required) {
-            $this->mform->addRule($elementname, null, 'required', 'client');
+    function print_form_select($title, $elementname, $options, $attrs = false) {
+        $select = $this->mform->createElement('select', $elementname, $title, null, $attrs);
+        // The first option is the default one and it is just to inform that we must select a value.
+        $select->addOption(' (' . get_string("selectfunction", "qtype_programmedresp") . ') ', "");
+        foreach ($options as $functionid => $functionname ) {
+            $select->addOption($functionname, $functionid);
         }
+        $this->mform->addElement($select);
+        $this->mform->addRule('programmedrespfid', null, 'required', 'client');
+
     }
 
     function print_form_spacer() {

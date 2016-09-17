@@ -50,7 +50,6 @@ class qtype_programmedresp_edit_form extends question_edit_form {
 
     public function __construct($submiturl, $question, $category, $contexts, $formeditable = true) {
 
-        parent::__construct($submiturl, $question, $category, $contexts, $formeditable);
 
         $islinkerinstalled = is_qtype_linkerdesc_installed();
         $cmid = optional_param('cmid', 0, PARAM_INT);
@@ -61,11 +60,12 @@ class qtype_programmedresp_edit_form extends question_edit_form {
         $islinkerinstalled && $cmid && ($id = programmedresp_getquiz_from_cm($cmid));
         $this->quizid = (empty($id)) ? NO_CONTEXT_QUIZ : $id;
 
+        parent::__construct($submiturl, $question, $category, $contexts, $formeditable);
 
     }
 
     protected function definition_inner($mform) {
-        global $CFG, $DB, $PAGE;
+        global $CFG, $PAGE;
 
         $this->functioncategoryid = (!empty($this->question->options->function))
             ? $this->question->options->function->programmedrespfcatid
@@ -81,7 +81,7 @@ class qtype_programmedresp_edit_form extends question_edit_form {
         "//]]></script>\n";
 
         $mform->addElement('hidden', 'quizid', $this->quizid);
-        $mform->setType(' quizid', PARAM_INT);
+        $mform->setType('quizid', PARAM_INT);
 
         // TODO: Refacor it with something more clean
         // context id will be required on contents.php once it will called by AJAX (script.js)
@@ -109,7 +109,10 @@ class qtype_programmedresp_edit_form extends question_edit_form {
 
         // Link to fill vars data
         $mform->addElement('header', 'varsheader', get_string("varsvalues", "qtype_programmedresp"));
-
+        // Expand variable header if there is empty
+        if (!empty($this->question->id)) {
+            $mform->setExpanded('varsheader');
+        }
         $mform->addElement('html', '<div id="id_vars_content">');
         if (!empty($this->question->id)) {
             $outputmanager->display_vars($this->question->questiontext,
@@ -120,23 +123,7 @@ class qtype_programmedresp_edit_form extends question_edit_form {
         // Functions header
         $mform->addElement('header', 'functionheader', get_string("assignfunction", "qtype_programmedresp"));
 
-        // Data
-        $categories = $DB->get_records('qtype_programmedresp_fcat', array(), 'id ASC', 'id, parent, name');
-        // Category options
-        $catoptions = array(0 => '&nbsp;(' . get_string('selectcategory', 'qtype_programmedresp') . ')&nbsp;');
-        if ($categories) {
-            foreach ($categories as $key => $cat) {
-                if (empty($catoptions[$cat->id])) {
-                    $catoptions[$cat->id] = $cat->name;
-                    unset($categories[$key]);
-                    programmedresp_add_child_categories($cat->id, $catoptions, $categories);
-                }
-            }
-        }
-        // Category select
-        $catattrs['onchange'] = 'update_addfunctionurl();return display_functionslist(this);';
-        $mform->addElement('select', 'functioncategory',
-                get_string('functioncategory', 'qtype_programmedresp'), $catoptions, $catattrs);
+        $this->add_category_select($mform);
 
         // Dirty hack to add the function (added later through ajax)
 //        if (empty($this->question->id)) {
@@ -215,6 +202,38 @@ class qtype_programmedresp_edit_form extends question_edit_form {
         }
     }
 
+    private function add_category_select($mform){
+        global $DB;
+
+        $catoptions = array();
+        $elementname = 'functioncategory';
+        $categories = $DB->get_records('qtype_programmedresp_fcat', array(), 'id ASC', 'id, parent, name');
+        // Category options
+        if ($categories) {
+            foreach ($categories as $key => $cat) {
+                if (empty($catoptions[$cat->id])) {
+                    $catoptions[$cat->id] = $cat->name;
+                    unset($categories[$key]);
+                    programmedresp_add_child_categories($cat->id, $catoptions, $categories);
+                }
+            }
+        }
+        // Category select
+        $catattrs['onchange'] = 'update_addfunctionurl();return display_functionslist(this);';
+
+        $selectElement = $mform->createElement('select', $elementname,
+            get_string('functioncategory', 'qtype_programmedresp'), null, $catattrs, true);
+
+        // First option just for advice that we have to select one funtion
+        $selectElement->addOption('&nbsp;(' . get_string('selectcategory', 'qtype_programmedresp') . ')&nbsp;', "");
+        foreach ($catoptions as $catid => $catname) {
+            $selectElement->addOption($catname, $catid);
+        }
+
+        $mform->addElement($selectElement);
+        $mform->addRule($elementname, null, 'required', 'client');
+    }
+
     /**
      * TODO: Tal com estan dissenyats els formularis es dificil validar cada camp
      * de les variables, ja que tocaria recorrer tots els camps, indentificar el tipus
@@ -279,7 +298,6 @@ class qtype_programmedresp_edit_form extends question_edit_form {
             if (!empty($question->options->programmedrespfid)) {
                 $question->functioncategory = $question->options->function->programmedrespfcatid;
                 $question->programmedrespfid = $question->options->programmedrespfid;
-
                 // Function responses
                 foreach ($question->options->responses as $returnkey => $resp) {
                     $fieldname = 'resp_' . $returnkey;
