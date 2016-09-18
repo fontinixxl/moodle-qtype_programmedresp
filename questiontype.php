@@ -130,7 +130,7 @@ class qtype_programmedresp extends question_type {
     public function save_question_options($question) {
         global $DB;
 
-        $question->programmedrespfid = required_param('programmedrespfid', PARAM_INT);
+        $question->programmedrespfid = optional_param('programmedrespfid', false, PARAM_INT);
         parent::save_question_options($question);
 
         $programmedresp = $DB->get_record('qtype_programmedresp',
