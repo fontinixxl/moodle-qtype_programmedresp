@@ -410,6 +410,9 @@ function add_to_parent(id, name, openerelementid, afterkey) {
             return true;
         }
     }
+    // If we reach here means the category parent is the root.
+    openerselect.options[optionslength] = newoption;
+    openerselect.selectedIndex = optionslength;
 }
 
 

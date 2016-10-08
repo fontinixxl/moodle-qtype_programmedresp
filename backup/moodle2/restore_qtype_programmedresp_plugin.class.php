@@ -150,8 +150,8 @@ class restore_qtype_programmedresp_plugin extends restore_qtype_plugin {
         if ($questioncreated) {
             $category = $DB->get_record('qtype_programmedresp_fcat',
                 array('name' => $data->name));
-            // If the categoy to restore doesn't exist then insert it.
-            // Otherwise mapp the existing one as a new category id.
+            // If the category to restore doesn't exist then insert it.
+            // Otherwise map the existing one as a new category id.
             if (!$category) {
                 $data->parent = 0; // Each of them will have 0 as parent category.
                 $newitemid = $DB->insert_record('qtype_programmedresp_fcat', $data);
@@ -165,7 +165,7 @@ class restore_qtype_programmedresp_plugin extends restore_qtype_plugin {
     }
 
     /**
-     * TODO: Restore function code once the backup will be done!
+     * TODO: Restore function code
      * @param $data
      */
     public function process_function($data) {

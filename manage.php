@@ -34,7 +34,8 @@ switch ($action) {
 
     case 'addcategory':
 
-        $catoptions[0] = get_string('root', 'qtype_programmedresp');
+        // issue github #32. Disable the chance to create sub categories as far as we'll find out a way to back up them.
+//        $catoptions[0] = get_string('root', 'qtype_programmedresp');
         $categories = $DB->get_records('qtype_programmedresp_fcat', array(), 'id ASC', 'id, parent, name');
         if ($categories) {
             foreach ($categories as $key => $cat) {
@@ -52,6 +53,7 @@ switch ($action) {
         // Insert category
         if ($data = $form->get_data()) {
 
+            $catdata = new stdClass();
             $catdata->parent = (int) $data->parent;
 
             $catdata->name = $data->name;
@@ -61,7 +63,7 @@ switch ($action) {
 
             $params = array($catdata->id, $catdata->name, "id_functioncategory", $data->parent);
             $PAGE->requires->js_init_call('exec_js_manage', $params);
-
+    
             // Display form
         } else {
             $form->display();
