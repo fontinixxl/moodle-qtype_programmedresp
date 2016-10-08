@@ -57,6 +57,10 @@ class restore_qtype_programmedresp_plugin extends restore_qtype_plugin {
         $elepath = $this->get_pathfor('/resps/resp');
         $paths[] = new restore_path_element($elename, $elepath);
 
+        $elename = 'category';
+        $elepath = $this->get_pathfor('/category');
+        $paths[] = new restore_path_element($elename, $elepath);
+
         $elename = 'function';
         $elepath = $this->get_pathfor('/function');
         $paths[] = new restore_path_element($elename, $elepath);
@@ -131,14 +135,42 @@ class restore_qtype_programmedresp_plugin extends restore_qtype_plugin {
         }
     }
 
+    public function process_category($data) {
+        global $DB;
+
+        $data = (object)$data;
+        // oldcategory id
+        $oldid = $data->id;
+
+        // Detect if the question is created or mapped.
+        $oldquestionid   = $this->get_old_parentid('question');
+        $questioncreated = $this->get_mappingid('question', $oldquestionid) ?
+            true : false;
+
+        if ($questioncreated) {
+            $category = $DB->get_record('qtype_programmedresp_fcat',
+                array('name' => $data->name));
+            // If the category to restore doesn't exist then insert it.
+            // Otherwise map the existing one as a new category id.
+            if (!$category) {
+                $data->parent = 0; // Each of them will have 0 as parent category.
+                $newitemid = $DB->insert_record('qtype_programmedresp_fcat', $data);
+            } else {
+                $newitemid = $category->id;
+            }
+
+            $this->set_mapping('category', $oldid, $newitemid);
+        }
+
+    }
 
     /**
-     * TODO: Restore function code once the backup will be done!
+     * TODO: Restore function code
      * @param $data
      */
     public function process_function($data) {
-        global $DB, $CFG;
-        require_once($CFG->dirroot . '/question/type/programmedresp/lib.php');
+        global $DB;
+
         $data = (object)$data;
         $oldid = $data->id;
 
@@ -153,10 +185,9 @@ class restore_qtype_programmedresp_plugin extends restore_qtype_plugin {
         // concatenated vars too.
         if($questioncreated) {
             if (!$function) {
-                $data->programmedrespfcatid = programmedresp_check_base_functions_category();
+                $data->programmedrespfcatid = $this->get_mappingid('category', $data->programmedrespfcatid);
                 $newitemid = $DB->insert_record('qtype_programmedresp_f', $data);
-                // once else if it will be move below
-            } else if ($function){
+            } else {
                 $newitemid = $function->id;
             }
 

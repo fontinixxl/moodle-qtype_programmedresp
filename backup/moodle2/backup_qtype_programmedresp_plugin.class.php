@@ -61,6 +61,11 @@ class backup_qtype_programmedresp_plugin extends backup_qtype_plugin
         $concatvar = new backup_nested_element('concatvar', array('id'), array(
             'question', 'name', 'readablename', 'vars'
         ));
+
+        // Just backup of current category, at this time I don't know how to manage
+        // the backup's parent categories.
+        $category = new backup_nested_element('category', array('id'), array('name'));
+
         // Adding additional -code- element to save
         // the function code (stored in a file on dataroot)
         $function = new backup_nested_element('function', array('id'), array(
@@ -93,6 +98,7 @@ class backup_qtype_programmedresp_plugin extends backup_qtype_plugin
         $resps->add_child($resp);
 
         // Dependences between them
+        $pluginwrapper->add_child($category);
         $pluginwrapper->add_child($function);
         $pluginwrapper->add_child($programmedresp);
 
@@ -125,6 +131,13 @@ class backup_qtype_programmedresp_plugin extends backup_qtype_plugin
 
         $resp->set_source_table('qtype_programmedresp_resp',
             array('question' => backup::VAR_PARENTID));
+
+        $category->set_source_sql("
+            SELECT c.*
+              FROM {qtype_programmedresp_fcat} c
+              JOIN {qtype_programmedresp_f} f ON c.id = f.programmedrespfcatid
+              JOIN {qtype_programmedresp} p ON f.id = p.programmedrespfid
+             WHERE p.question = ?", array(backup::VAR_PARENTID));
 
         // TODO: Backup function CODE.
         $function->set_source_sql('
